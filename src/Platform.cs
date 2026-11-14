@@ -1,5 +1,5 @@
 // The game folder, installed versions, files and network.
-using System; using System.Diagnostics; using System.IO; using System.Linq; using System.Net; using System.Text.RegularExpressions; using System.Threading.Tasks; using System.Windows.Forms; using Microsoft.Win32;
+using System; using System.Collections.Generic; using System.Diagnostics; using System.IO; using System.Linq; using System.Net; using System.Text.RegularExpressions; using System.Threading.Tasks; using System.Windows.Forms; using System.Web.Script.Serialization; using Microsoft.Win32;
 
 partial class SotfModsManager {
     string Game { get { return gamePath.Text.Trim(); } } string Undo { get { return Path.Combine(Game, ".sotfmm-undo"); } }
@@ -11,6 +11,7 @@ partial class SotfModsManager {
         json = Path.Combine(Game, json); if (!File.Exists(json)) return File.Exists(Path.Combine(Game, dll)) ? "unknown" : null;
         var m = Regex.Match(File.ReadAllText(json), "\"version\"\\s*:\\s*\"([^\"]+)\""); return m.Success ? m.Groups[1].Value : "unknown";
     }
+    Dictionary<string, object> Manifest(string id) { try { return new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(File.ReadAllText(Path.Combine(Game, @"Mods\" + id + @"\manifest.json"))) ?? new Dictionary<string, object>(); } catch (Exception) { return new Dictionary<string, object>(); } }
     static Version Ver(string s) { Version v; return Version.TryParse(Regex.Match(s ?? "", @"\d+(\.\d+){1,3}").Value, out v) ? v : null; }
     static bool Newer(string a, string b) { var x = Ver(a); return x != null && b != null && (Ver(b) == null || x > Ver(b)); } // an unreadable installed version counts as outdated
     static string Esc(object s) { return Uri.EscapeDataString((string)s); }

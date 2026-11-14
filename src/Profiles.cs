@@ -40,7 +40,7 @@ partial class SotfModsManager {
         Run("Deleting " + name, t => { var msg = Switch(next); TryDelete(Path.Combine(Profiles, name)); return Task.FromResult(name + " deleted. " + msg); });
     }
     void ExportProfile() {
-        var list = mods.Rows.Cast<DataRow>().Where(r => (string)r["Action"] != "Install").Select(r => new Dictionary<string, object> { { "id", r["Id"] }, { "name", r["Name"] }, { "user", r["User"] }, { "slug", r["Slug"] } }).ToList();
+        var list = mods.Rows.Cast<DataRow>().Where(r => (string)r["Action"] != "Install" && (string)r["Action"] != Manual).Select(r => new Dictionary<string, object> { { "id", r["Id"] }, { "name", r["Name"] }, { "user", r["User"] }, { "slug", r["Slug"] } }).ToList();
         using (var d = new SaveFileDialog { Filter = ProfileFilter, FileName = Active + ".sotfprofile" }) if (d.ShowDialog(this) == DialogResult.OK) {
             File.WriteAllText(d.FileName, new JavaScriptSerializer().Serialize(new Dictionary<string, object> { { "profile", Active }, { "game", "Sons of the Forest" }, { "mods", list } }));
             Toast(Done, "Exported " + Active + " with " + Plural(list.Count, "mod") + ". Only mods from sotf-mods.com are included."); }

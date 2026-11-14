@@ -87,7 +87,7 @@ Double-clicking a `.sotfprofile` file or an **Open in launcher** link (`sotfmm:/
 
 ## Logs and crashes
 
-The **Logs** button opens RedLoader's log (`_Redloader/Latest.log`), its error log, the game's `Player.log` and the crash reports folder. When the game closes because of a crash, the manager comes to the front and offers to open the logs. This works whether you started the game from the manager or from Steam.
+The **Logs** button opens RedLoader's log (`_Redloader/Latest.log`), its error log, the game's `Player.log`, and the folders that hold them and the crash reports. When the game closes because of a crash, the manager comes to the front and offers to open the logs. This works whether you started the game from the manager or from Steam.
 
 ## What it installs
 
@@ -117,6 +117,12 @@ Microsoft Defender scans every RedLoader file the first time ([RedLoader#49](htt
 <summary><b>How do I remove everything?</b></summary>
 
 Use **Uninstall RedLoader** in settings. Your mods are kept in case you come back, and the notification offers **Undo**. To remove mods too, open **Mods folder** in settings and delete what is inside.
+</details>
+
+<details>
+<summary><b>I installed some mods by hand. Will the manager see them?</b></summary>
+
+Yes. Any mod in the `Mods` folder that isn't on sotf-mods.com shows up in the Installed tab as **Manual**, with the name and version from its `manifest.json`. The manager doesn't update or remove those mods, and they move with the profile they belong to.
 </details>
 
 <details>

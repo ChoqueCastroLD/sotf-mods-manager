@@ -1,6 +1,6 @@
 // SotF Mods Manager: installs RedLoader and Sons of the Forest mods from sotf-mods.com. https://sotf-mods.com
 // This file builds the window and keeps its state. The other files in src hold the rest.
-using System; using System.Data; using System.Diagnostics; using System.Drawing; using System.Linq; using System.Net; using System.Runtime.InteropServices; using System.Windows.Forms;
+using System; using System.Collections.Generic; using System.Data; using System.IO; using System.Web.Script.Serialization; using System.Diagnostics; using System.Drawing; using System.Linq; using System.Net; using System.Runtime.InteropServices; using System.Windows.Forms;
 
 partial class SotfModsManager : Form {
     const string AppVersion = "0.6.0", SiteUrl = "https://sotf-mods.com", RepoUrl = "https://github.com/ChoqueCastroLD/sotf-mods-manager";
@@ -46,8 +46,13 @@ partial class SotfModsManager : Form {
             : old ? "Version " + v + " installed, version " + latest + " is available" : "Version " + v + (latest == v ? ", up to date" : " installed");
         deps.Text = (VcInstalled() ? "Visual C++ runtime installed" : "Visual C++ runtime missing, installed with RedLoader") + "\n.NET runtime bundled with RedLoader";
         loaderBtn.Text = v == null ? "Install" : old ? "Update to " + latest : "Repair"; Tint(loaderBtn, v == null || old ? Red : Raised); loaderBtn.Enabled = play.Enabled = Valid; profileBtn.Text = Valid ? Active : "Profiles";
+        foreach (var r in mods.Select("Action = '" + Manual + "'")) mods.Rows.Remove(r);
         foreach (DataRow r in mods.Rows) { var id = (string)r["Id"]; var have = Valid ? JsonVersion(@"Mods\" + id + @"\manifest.json", @"Mods\" + id + ".dll") : null; var upd = have != null && Newer((string)r["Latest"], have);
             r["Installed"] = upd ? "Installed " + have : ""; r["Action"] = have == null ? "Install" : upd ? "Update" : Installed; }
+        if (Valid && Directory.Exists(Path.Combine(Game, "Mods"))) foreach (var dll in Directory.GetFiles(Path.Combine(Game, "Mods"), "*.dll")) { // mods added by hand: listed, but not managed
+            var id = Path.GetFileNameWithoutExtension(dll); if (ById(id) != null) continue; var m = Manifest(id); Func<string, string> f = k => m.ContainsKey(k) ? m[k] as string : null;
+            mods.Rows.Add(f("name") ?? id, f("author") ?? "", "Installed manually" + (f("author") == null ? "" : " by " + f("author")), 0, File.GetLastWriteTime(dll), "", f("version") ?? "unknown", Manual, id, "", "", "", "", "",
+                (f("description") ?? "") + "\n\nThis mod is not on sotf-mods.com, so it was installed by hand. The manager lists it but does not update or remove it. Its files are in the Mods folder."); }
         if (!Valid) settings.Visible = true; Filter();
     }
 }

@@ -6,7 +6,7 @@ partial class SotfModsManager {
     static readonly string GameData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), @"AppData\LocalLow\Endnight\SonsOfTheForest"),
         Crashes = Path.Combine(Path.GetTempPath(), @"Endnight\SonsOfTheForest\Crashes");
     string[][] Logs { get { return new[] { new[] { "RedLoader log", Path.Combine(Game, @"_Redloader\Latest.log") }, new[] { "RedLoader errors", Path.Combine(Game, @"_Redloader\ErrorLog.log") },
-        new[] { "Game log", Path.Combine(GameData, "Player.log") }, new[] { "Crash reports folder", Crashes } }; } } // label, path
+        new[] { "Game log", Path.Combine(GameData, "Player.log") }, new[] { "RedLoader logs folder", Path.Combine(Game, "_Redloader") }, new[] { "Game logs folder", GameData }, new[] { "Crash reports folder", Crashes } }; } } // label, path
     DateTime? started; // when the game was first seen running
 
     Button SetupLogs() {

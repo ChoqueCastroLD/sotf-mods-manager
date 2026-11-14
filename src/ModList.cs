@@ -3,7 +3,7 @@ using System; using System.Collections; using System.Collections.Generic; using 
 using System.Text.RegularExpressions; using System.Web.Script.Serialization; using System.Windows.Forms;
 
 partial class SotfModsManager {
-    const string Installed = "Installed"; const int ActionCol = 5;
+    const string Installed = "Installed", Manual = "Manual"; const int ActionCol = 5;
     static readonly string[][] Views = { new[] { "All", "", "No mods match your search" }, new[] { "Not installed", "Action = 'Install'", "Every mod is installed" },
         new[] { "Installed", "Action <> 'Install'", "No mods installed yet" }, new[] { "Updates", "Action = 'Update'", "All your mods are up to date" } }; // tab, filter, empty message
     static readonly string[][] Sorts = { new[] { "Most downloaded", "Downloads DESC" }, new[] { "Least downloaded", "Downloads" }, new[] { "Recently updated", "Updated DESC" },
@@ -86,11 +86,11 @@ partial class SotfModsManager {
         prev.Enabled = page > 0; next.Enabled = page < count - 1;
     }
     static string IdList(Dictionary<string, object> m, string key) { object v; return m.TryGetValue(key, out v) && v is IEnumerable && !(v is string) ? string.Join(",", ((IEnumerable)v).Cast<object>()) : ""; } // mod ids
-    DataRow ById(string id) { return mods.Rows.Cast<DataRow>().FirstOrDefault(x => (string)x["Id"] == id); }
+    DataRow ById(string id) { return mods.Rows.Cast<DataRow>().FirstOrDefault(x => string.Equals((string)x["Id"], id, StringComparison.OrdinalIgnoreCase)); }
     DataRow Row(int i) { return (DataRow)grid.Rows[i].Tag; }
     DataRow Current { get { return grid.CurrentRow == null ? null : Row(grid.CurrentRow.Index); } }
     bool Pending(int i) { return i >= 0 && Pending(Row(i)); }
-    static bool Pending(DataRow r) { return (string)r["Action"] != Installed; }
+    static bool Pending(DataRow r) { var a = (string)r["Action"]; return a == "Install" || a == "Update"; }
     void Hover(int row, int col) { // hover is drawn by PaintCell, so it covers the whole row
         if (row == hoverRow && col == hoverCol) return; var old = hoverRow; hoverRow = row; hoverCol = col;
         foreach (var i in new[] { old, row }) if (i >= 0 && i < grid.Rows.Count) grid.InvalidateRow(i); grid.Invalidate(new Rectangle(0, 0, grid.Width, grid.ColumnHeadersHeight));
@@ -109,7 +109,7 @@ partial class SotfModsManager {
         Fill(g, grid.Rows[e.RowIndex].Selected ? Raised : e.RowIndex == hoverRow ? Surface : Bg, b); Fill(g, Line, new Rectangle(b.X, b.Bottom - 1, b.Width, 1));
         if (col == "Thumb") DrawPicture(g, ((string)r["Gallery"]).Split('\n')[0], new Rectangle(b.X + 8, b.Y + 7, 96, 54), 320, 192, true);
         else if (col == "Action") { var a = (string)e.Value; var box = Rectangle.Inflate(b, -8, -14); var hot = e.RowIndex == hoverRow && e.ColumnIndex == hoverCol;
-            if (a != Installed) Fill(g, a == "Update" ? (hot ? RedHover : Red) : hot ? Hot : Line, box); TextRenderer.DrawText(g, a, Bold, box, a == Installed ? Muted : Fg, Center); }
+            if (Pending(r)) Fill(g, a == "Update" ? (hot ? RedHover : Red) : hot ? Hot : Line, box); TextRenderer.DrawText(g, a, Bold, box, Pending(r) ? Fg : Muted, Center); }
         else { string key, second = SecondLine.TryGetValue(col, out key) ? r[key] as string : null; var box = Rectangle.Inflate(b, -8, -12);
             var f = TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix | TextFormatFlags.VerticalCenter | (col == "Downloads" ? TextFormatFlags.Right : 0);
             if (string.IsNullOrEmpty(second)) TextRenderer.DrawText(g, (string)e.FormattedValue, e.CellStyle.Font, box, Fg, f);
