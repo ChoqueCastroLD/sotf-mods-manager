@@ -18,7 +18,7 @@ partial class SotfModsManager : Form {
 
     SotfModsManager() {
         Text = "SotF Mods Manager " + AppVersion; var area = Screen.PrimaryScreen.WorkingArea; Size = new Size(Math.Min(1280, area.Width), Math.Min(820, area.Height)); MinimumSize = new Size(1000, 600); StartPosition = FormStartPosition.CenterScreen;
-        BackColor = Bg; ForeColor = Fg; Font = Body; ShowIcon = false; var dark = 1; DwmSetWindowAttribute(Handle, 20, ref dark, 4); // dark title bar
+        BackColor = Bg; ForeColor = Fg; Font = Body; Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); var dark = 1; DwmSetWindowAttribute(Handle, 20, ref dark, 4); // dark title bar
         var logo = new Label { Image = Image.FromStream(typeof(SotfModsManager).Assembly.GetManifestResourceStream("logo.png")), ImageAlign = ContentAlignment.MiddleLeft, Dock = DockStyle.Left, Width = 160, Cursor = Cursors.Hand };
         logo.Click += (s, e) => Process.Start(SiteUrl); tip.SetToolTip(logo, "Open sotf-mods.com");
         play = Btn(Play, "Play", PlayGame, Red, 120); play.Dock = DockStyle.Right;
