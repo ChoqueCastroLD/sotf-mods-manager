@@ -35,6 +35,12 @@ You don't need to install .NET or move files by hand. The manager finds your gam
 - **Uninstall RedLoader**: removes `version.dll`, `doorstop_config.ini` and `_Redloader/`. Your `Mods` folder is kept.
 - Shortcuts to the game, `Mods` and `_Redloader` folders.
 
+## Updates
+
+- **RedLoader**: on startup the manager compares your installed version with the latest GitHub release. If a newer one exists, it shows "Update available" and the button becomes **Update to RedLoader X**.
+- **The manager itself**: it tells you when a new SotF Mods Manager release is out and offers to open the download page.
+- Without internet, or if GitHub doesn't answer, it skips the check silently and everything else keeps working.
+
 ## How it works
 
 1. It finds the game through Steam's uninstall registry key (AppID 1326470), then through every library in `libraryfolders.vdf`.

@@ -4,7 +4,7 @@ using System.Linq; using System.Net; using System.Text.RegularExpressions; using
 using System.Windows.Forms; using Microsoft.Win32;
 
 class SotfModsManager : Form {
-    const string Repo = "https://github.com/ToniMacaroni/RedLoader/releases/", VcUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
+    const string AppVersion = "0.2.0", Repo = "https://github.com/ToniMacaroni/RedLoader/releases/", VcUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
     Label status = new Label { Dock = DockStyle.Top, Height = 50, TextAlign = ContentAlignment.MiddleCenter };
     Label deps = new Label { Dock = DockStyle.Top, Height = 40, TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.DimGray };
     Button install = new Button { Dock = DockStyle.Top, Height = 50, Font = new Font("Segoe UI", 12f, FontStyle.Bold) };
@@ -12,11 +12,11 @@ class SotfModsManager : Form {
     CheckBox advanced = new CheckBox { Dock = DockStyle.Top, Text = "Advanced options", Padding = new Padding(4) };
     TextBox gamePath = new TextBox { Width = 300 }, version = new TextBox { Text = "latest", Width = 80 };
     FlowLayoutPanel panel = new FlowLayoutPanel { Dock = DockStyle.Fill, Visible = false, Padding = new Padding(4) };
-
-    [STAThread] static void Main() { Application.EnableVisualStyles(); Application.Run(new SotfModsManager()); }
+    string latest; // newest RedLoader release on GitHub (null if offline)
+    [STAThread] static void Main() { ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12; Application.EnableVisualStyles(); Application.Run(new SotfModsManager()); }
 
     SotfModsManager() {
-        Text = "SotF Mods Manager"; ClientSize = new Size(420, 176); Font = new Font("Segoe UI", 9f);
+        Text = "SotF Mods Manager " + AppVersion; ClientSize = new Size(420, 176); Font = new Font("Segoe UI", 9f);
         FormBorderStyle = FormBorderStyle.FixedSingle; MaximizeBox = false; Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         panel.Controls.Add(new Label { Text = "Game folder:", AutoSize = true }); panel.Controls.Add(gamePath); panel.Controls.Add(Btn("Browse...", Browse));
         panel.Controls.Add(new Label { Text = "RedLoader version (tag or latest):", AutoSize = true }); panel.Controls.Add(version);
@@ -28,13 +28,19 @@ class SotfModsManager : Form {
         advanced.CheckedChanged += (s, e) => { panel.Visible = advanced.Checked; ClientSize = new Size(420, advanced.Checked ? 350 : 176); };
         gamePath.TextChanged += (s, e) => Refresh2(); gamePath.Text = FindGame();
         install.Click += async (s, e) => await Install(); Refresh2();
+        Load += async (s, e) => { latest = await LatestTag("ToniMacaroni/RedLoader"); Refresh2(); var me = await LatestTag("ChoqueCastroLD/sotf-mods-manager");
+            if (Newer(me, AppVersion) && MessageBox.Show("SotF Mods Manager " + me + " is available. Open download page?", Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                Process.Start("https://github.com/ChoqueCastroLD/sotf-mods-manager/releases/latest"); };
     }
+    static async Task<string> LatestTag(string repo) { // returns null when offline or rate-limited
+        try { using (var web = new WebClient()) { web.Headers["User-Agent"] = "SotfModsManager";
+            return Regex.Match(await web.DownloadStringTaskAsync("https://api.github.com/repos/" + repo + "/releases/latest"), "\"tag_name\"\\s*:\\s*\"([^\"]+)\"").Groups[1].Value; } } catch { return null; }
+    }
+    static bool Newer(string a, string b) { Version x, y; return a != null && b != null && Version.TryParse(a.TrimStart('v'), out x) && Version.TryParse(b.TrimStart('v'), out y) && x > y; }
     Button Btn(string text, Action a) { var b = new Button { Text = text, AutoSize = true }; b.Click += (s, e) => a(); return b; }
     string Game { get { return gamePath.Text.Trim(); } } bool Valid { get { return File.Exists(Path.Combine(Game, "SonsOfTheForest.exe")); } }
     static bool VcInstalled() { // Visual C++ 2015-2022 x64, needed by RedLoader's native splash screen
-        using (var k = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\X64"))
-            return k != null && Equals(k.GetValue("Installed"), 1);
-    }
+        using (var k = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\X64")) return k != null && Equals(k.GetValue("Installed"), 1); }
     static string FindGame() { // Steam uninstall key first, then every Steam library listed in libraryfolders.vdf
         var loc = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 1326470", "InstallLocation", null) as string;
         if (loc != null && Directory.Exists(loc)) return loc;
@@ -43,29 +49,25 @@ class SotfModsManager : Form {
         return libs.Select(l => Path.Combine(l, @"steamapps\common\Sons Of The Forest")).FirstOrDefault(Directory.Exists) ?? "";
     }
     string InstalledVersion() {
-        var info = Path.Combine(Game, @"_Redloader\info.json");
-        if (!File.Exists(info)) return File.Exists(Path.Combine(Game, "version.dll")) ? "unknown" : null;
+        var info = Path.Combine(Game, @"_Redloader\info.json"); if (!File.Exists(info)) return File.Exists(Path.Combine(Game, "version.dll")) ? "unknown" : null;
         var m = Regex.Match(File.ReadAllText(info), "\"version\"\\s*:\\s*\"(.+?)\""); return m.Success ? m.Groups[1].Value : "unknown";
     }
-
     void Refresh2() {
-        var v = Valid ? InstalledVersion() : null;
-        status.Text = !Valid ? "Sons of the Forest not found.\nOpen 'Advanced options' and pick the game folder."
-            : v == null ? "Game found. RedLoader is not installed." : "RedLoader " + v + " is installed. Ready to mod!";
-        deps.Text = "Dependencies:  Visual C++ x64 runtime " + (VcInstalled() ? "✔ installed" : "✖ missing (installed automatically)")
-            + "\n.NET runtime ✔ included with RedLoader (no SDK needed)";
-        install.Text = v == null ? "Install RedLoader" : "Update / Repair RedLoader"; install.Enabled = Valid;
+        var v = Valid ? InstalledVersion() : null; var upd = Newer(latest, v);
+        status.Text = !Valid ? "Sons of the Forest not found.\nOpen 'Advanced options' and pick the game folder." : v == null ? "Game found. RedLoader is not installed."
+            : upd ? "RedLoader " + v + " installed. Update available: " + latest : "RedLoader " + v + (latest == v ? " is up to date ✔" : " is installed.");
+        deps.Text = "Dependencies:  Visual C++ x64 runtime " + (VcInstalled() ? "✔ installed" : "✖ missing (installed automatically)") + "\n.NET runtime ✔ included with RedLoader (no SDK needed)";
+        install.Text = v == null ? "Install RedLoader" : upd ? "Update to RedLoader " + latest : "Repair RedLoader"; install.Enabled = Valid;
         if (!Valid) advanced.Checked = true;
     }
     async Task Download(string url, string file, string what) {
-        status.Text = "Downloading " + what + "..."; ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+        status.Text = "Downloading " + what + "...";
         using (var web = new WebClient()) { web.DownloadProgressChanged += (s, e) => bar.Value = e.ProgressPercentage; await web.DownloadFileTaskAsync(url, file); }
     }
     async Task InstallVc() { // official Microsoft installer; Windows asks for admin permission
         var exe = Path.Combine(Path.GetTempPath(), "vc_redist.x64.exe"); await Download(VcUrl, exe, "Visual C++ runtime");
         status.Text = "Installing Visual C++ runtime..."; var p = Process.Start(exe, "/install /passive /norestart"); await Task.Run(() => p.WaitForExit());
     }
-
     async Task Install() {
         if (Process.GetProcessesByName("SonsOfTheForest").Length > 0) { MessageBox.Show("Please close Sons of the Forest first."); return; }
         var v = version.Text.Trim(); var tmp = Path.GetTempFileName(); install.Enabled = false;
@@ -89,7 +91,6 @@ class SotfModsManager : Form {
             var dir = Path.Combine(Game, "_Redloader"); if (Directory.Exists(dir)) Directory.Delete(dir, true);
         } catch (Exception ex) { MessageBox.Show("Uninstall failed (is the game running?): " + ex.Message); } Refresh2();
     }
-
     void DefenderExclusion() { // Defender scans ~235 RedLoader DLLs on first start (RedLoader issue #49); excluding the game folder avoids it
         try { Process.Start(new ProcessStartInfo("powershell", "-NoProfile -Command Add-MpPreference -ExclusionPath '" + Game + "'") { Verb = "runas", WindowStyle = ProcessWindowStyle.Hidden }); } catch { }
     }
