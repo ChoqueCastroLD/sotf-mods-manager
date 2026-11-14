@@ -24,7 +24,7 @@ partial class SotfModsManager : Form {
         play = Btn(Play, "Play", PlayGame, Red, 120); play.Dock = DockStyle.Right;
         loaderBtn = Btn(Reload, "Install", () => Run("Installing RedLoader", InstallLoader), Red, 170);
         var header = Strip(72, 40, Surface, loaderState, new Label { Text = "RedLoader", Dock = DockStyle.Top, Height = 22, Font = F(10.5f, true) }, deps, // one bar: logo, RedLoader state, its actions, Play
-            Group(DockStyle.Right, loaderBtn, Btn(Gear, null, () => settings.Visible = !settings.Visible, Raised, 46, "Settings")), new Panel { Dock = DockStyle.Right, Width = 12 }, play, logo);
+            Group(DockStyle.Right, loaderBtn, SetupLogs(), Btn(Gear, null, () => settings.Visible = !settings.Visible, Raised, 46, "Settings")), new Panel { Dock = DockStyle.Right, Width = 12 }, play, logo);
         var defenderInfo = new Label { Text = InfoIcon.ToString(), Font = new Font(IconFont, 11f), ForeColor = Muted, AutoSize = true, Margin = new Padding(6, 24, 0, 0), Cursor = Cursors.Help };
         tip.SetToolTip(defenderInfo, "Microsoft Defender scans every RedLoader file the first time the game starts,\nwhich can take minutes. Excluding the game folder skips that scan. Asks for admin rights.");
         var browse = Btn(Folder, null, Browse, Raised, 40, "Choose folder"); browse.Margin = new Padding(3, 4, 3, 3); var versionField = Field(version, 140);

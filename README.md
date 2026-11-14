@@ -70,6 +70,12 @@ The manager registers `.sotfprofile` files and `sotfmm://` links for your Window
 | .NET 6 runtime | Nothing to do: RedLoader ships its own copy |
 | .NET Framework 4.8 (to run this tool) | Already part of Windows 10 and 11 |
 
+## Logs and crashes
+
+The **Logs** button opens RedLoader's log (`_Redloader/Latest.log`), its error log, the game's `Player.log` and the crash reports folder.
+
+When the game crashes, the manager notices as soon as it closes and offers to open the logs. They usually name the mod that caused the crash, so you can send them to its author. This works whether you started the game from the manager or from Steam.
+
 ## Settings
 
 ![settings](docs/settings.png)
@@ -107,6 +113,7 @@ Every task shows a notification in the bottom right corner that goes from progre
 | [Details.cs](src/Details.cs) | The details panel: gallery, facts and description |
 | [Pictures.cs](src/Pictures.cs) | Downloads, decodes and caches pictures |
 | [Install.cs](src/Install.cs) | Installs RedLoader, mods and dependencies; uninstall, Defender, Play |
+| [Logs.cs](src/Logs.cs) | Logs menu and crash check |
 | [Profiles.cs](src/Profiles.cs) | Mod profiles: switch, create, delete, export and import |
 | [Toasts.cs](src/Toasts.cs) | Notifications and the confirmation dialog |
 | [Ui.cs](src/Ui.cs) | Theme and reusable UI building blocks |

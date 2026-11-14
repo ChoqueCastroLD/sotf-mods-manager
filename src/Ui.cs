@@ -3,7 +3,7 @@ using System; using System.Drawing; using System.Linq; using System.Runtime.Inte
 
 partial class SotfModsManager {
     const char Play = '', Gear = '', Folder = '', Reload = '', Remove = '', Shield = '', SearchIcon = '', Prev = '', Next = '',
-        CloseIcon = '', InfoIcon = '', Busy = '', Done = '', Fail = '', OpenIcon = '', SortIcon = '';
+        CloseIcon = '', InfoIcon = '', Busy = '', Done = '', Fail = '', OpenIcon = '', SortIcon = '', LogIcon = '';
     // Black and blood red, like the game's own menus. Hot is the hover color of anything drawn on Line.
     static readonly Color Bg = C(0x0D0B0B), Surface = C(0x171313), Raised = C(0x241D1D), Line = C(0x342A2A), Hot = C(0x4A3B3B), Fg = C(0xEFE8E5), Muted = C(0x9A8E8B), Red = C(0xB3231A), RedHover = C(0xCF3324);
     // Segoe UI is hinted for ClearType, so it stays sharp at every size (Segoe UI Variable looks soft in WinForms)
