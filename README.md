@@ -59,7 +59,7 @@ Installs RedLoader and every mod on [sotf-mods.com](https://sotf-mods.com), keep
 <tr>
 <td colspan="2" valign="top">
 <img src="docs/builds.png" alt="Builds tab"><br>
-<b>Builds in one click.</b> The Builds tab lists every BuildShare build on sotf-mods.com. Install one and the manager adds BuildShare if you don't have it, then drops the build where BuildShare finds it. Open BuildShare in game (Page Up) to place it.
+<b>Builds in one click.</b> The Builds tab lists every BuildShare build on sotf-mods.com. Install one and the manager adds BuildShare if you don't have it, then drops the build where BuildShare finds it. Open BuildShare in game (Page Up) to place it. The <b>Install with launcher</b> buttons on sotf-mods.com open the manager on that mod or build (<code>sotfmm://mod/user/slug</code> and <code>sotfmm://build/user/slug</code>).
 </td>
 </tr>
 </table>

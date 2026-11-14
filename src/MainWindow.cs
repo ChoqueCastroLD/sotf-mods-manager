@@ -3,7 +3,7 @@
 using System; using System.Collections.Generic; using System.Data; using System.IO; using System.Web.Script.Serialization; using System.Diagnostics; using System.Drawing; using System.Linq; using System.Net; using System.Runtime.InteropServices; using System.Windows.Forms;
 
 partial class SotfModsManager : Form {
-    const string AppVersion = "0.8.0", SiteUrl = "https://sotf-mods.com", RepoUrl = "https://github.com/ChoqueCastroLD/sotf-mods-manager";
+    const string AppVersion = "0.8.1", SiteUrl = "https://sotf-mods.com", RepoUrl = "https://github.com/ChoqueCastroLD/sotf-mods-manager";
     Label loaderState = new Label { Dock = DockStyle.Fill, ForeColor = Muted, Font = F(9.5f) }, deps = new Label { Dock = DockStyle.Right, Width = 330, ForeColor = Muted, Font = F(9f), TextAlign = ContentAlignment.MiddleLeft };
     TextBox gamePath = Box(), version = Box(), search = Box();
     FlowLayoutPanel settings = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 250, BackColor = Surface, Padding = new Padding(21, 0, 24, 14), Visible = false };
