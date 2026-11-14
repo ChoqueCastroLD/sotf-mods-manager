@@ -29,7 +29,7 @@ Installs RedLoader and every mod on [sotf-mods.com](https://sotf-mods.com), keep
 <tr>
 <td width="50%" valign="top">
 <img src="docs/gallery.png" alt="Mod details with picture gallery"><br>
-<b>Every mod, with pictures.</b> Browse, search and sort all approved mods on sotf-mods.com. Select one to see its gallery, version, downloads and full description.
+<b>Every mod, with pictures.</b> Browse, search and sort all approved mods on sotf-mods.com. NSFW mods stay hidden until you tick <b>NSFW</b>. Select one to see its gallery, version, downloads and full description.
 </td>
 <td width="50%" valign="top">
 <img src="docs/installed.png" alt="Installed mods with updates"><br>
@@ -54,6 +54,12 @@ Installs RedLoader and every mod on [sotf-mods.com](https://sotf-mods.com), keep
 <td valign="top">
 <img src="docs/settings.png" alt="Settings"><br>
 <b>RedLoader made easy.</b> Install, repair, update, pin a version or uninstall RedLoader with Undo. Add a Defender exclusion for faster first starts.
+</td>
+</tr>
+<tr>
+<td colspan="2" valign="top">
+<img src="docs/builds.png" alt="Builds tab"><br>
+<b>Builds in one click.</b> The Builds tab lists every BuildShare build on sotf-mods.com. Install one and the manager adds BuildShare if you don't have it, then drops the build where BuildShare finds it. Open BuildShare in game (Page Up) to place it.
 </td>
 </tr>
 </table>

@@ -4,8 +4,10 @@ using System.Text.RegularExpressions; using System.Web.Script.Serialization; usi
 
 partial class SotfModsManager {
     const string Installed = "Installed", Manual = "Manual"; const int ActionCol = 5;
-    static readonly string[][] Views = { new[] { "All", "", "No mods match your search" }, new[] { "Not installed", "Action = 'Install'", "Every mod is installed" },
-        new[] { "Installed", "Action <> 'Install'", "No mods installed yet" }, new[] { "Updates", "Action = 'Update'", "All your mods are up to date" } }; // tab, filter, empty message
+    const string Build = "Build", ModsOnly = "Kind = 'Mod'"; const char Unchecked = '', Checked = ''; // Segoe MDL2 checkbox and checked checkbox
+    static readonly string[][] Views = { new[] { "All", ModsOnly, "No mods match your search" }, new[] { "Not installed", ModsOnly + " AND Action = 'Install'", "Every mod is installed" },
+        new[] { "Installed", ModsOnly + " AND Action <> 'Install'", "No mods installed yet" }, new[] { "Updates", "Action = 'Update'", "All your mods are up to date" },
+        new[] { "Builds", "Kind = 'Build'", "No builds match your search" } }; // tab, filter, empty message
     static readonly string[][] Sorts = { new[] { "Most downloaded", "Downloads DESC" }, new[] { "Least downloaded", "Downloads" }, new[] { "Recently updated", "Updated DESC" },
         new[] { "Oldest update", "Updated" }, new[] { "Name, A to Z", "Name" }, new[] { "Name, Z to A", "Name DESC" } }; // label, DataView sort
     static readonly Dictionary<string, string> SecondLine = new Dictionary<string, string> { { "Name", "Byline" }, { "Latest", "Installed" } };
@@ -15,10 +17,10 @@ partial class SotfModsManager {
         ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None, EnableHeadersVisualStyles = false, ColumnHeadersHeight = 40, ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
         AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, BackgroundColor = Bg, StandardTab = true });
     Label showing = new Label { Dock = DockStyle.Fill, ForeColor = Muted, TextAlign = ContentAlignment.MiddleLeft };
-    FlowLayoutPanel pages; Button[] tabs; Button prev, next, sortBtn; int view, first, hoverRow = -1, hoverCol = -1; bool rendering; string empty = "Loading mods";
+    FlowLayoutPanel pages; Button[] tabs; Button prev, next, sortBtn, nsfwBtn; int view, first, hoverRow = -1, hoverCol = -1; bool rendering, nsfw; string empty = "Loading mods";
 
     Control[] SetupList() { // returns the list with its details panel, and the toolbar above them
-        foreach (var c in "Name Author Byline Downloads Updated Installed Latest Action Id User Slug Deps Clashes Gallery Description".Split(' '))
+        foreach (var c in "Name Author Byline Downloads Updated Installed Latest Action Id User Slug Deps Clashes Gallery Description Kind Release Nsfw".Split(' '))
             mods.Columns.Add(c, c == "Downloads" ? typeof(int) : c == "Updated" ? typeof(DateTime) : typeof(string));
         mods.DefaultView.Sort = "Downloads DESC";
         grid.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle { BackColor = Bg, ForeColor = Muted, SelectionBackColor = Bg, Font = F(9f, true), Padding = new Padding(8, 0, 8, 0) };
@@ -28,7 +30,7 @@ partial class SotfModsManager {
                 AutoSizeMode = fix ? DataGridViewAutoSizeColumnMode.None : DataGridViewAutoSizeColumnMode.NotSet, SortMode = fix ? DataGridViewColumnSortMode.NotSortable : DataGridViewColumnSortMode.Programmatic }); }
         grid.Columns["Downloads"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight; grid.Columns["Latest"].SortMode = DataGridViewColumnSortMode.NotSortable; grid.Columns["Name"].DefaultCellStyle.Font = Bold;
         grid.CellPainting += PaintCell; grid.Resize += (s, e) => Render(); grid.MouseWheel += (s, e) => Go(Page + (e.Delta < 0 ? 1 : -1));
-        grid.Paint += (s, e) => { if (grid.Rows.Count == 0) TextRenderer.DrawText(e.Graphics, mods.Rows.Count == 0 ? empty : Views[search.Text.Trim() == "" ? view : 0][2], Body, grid.ClientRectangle, Muted, Center); };
+        grid.Paint += (s, e) => { if (grid.Rows.Count == 0) TextRenderer.DrawText(e.Graphics, mods.Rows.Count == 0 ? empty : Views[search.Text.Trim() == "" || view == 4 ? view : 0][2], Body, grid.ClientRectangle, Muted, Center); };
         grid.CellMouseMove += (s, e) => Hover(e.RowIndex, e.ColumnIndex); grid.MouseLeave += (s, e) => Hover(-1, -1);
         grid.KeyDown += (s, e) => { if (e.KeyCode == Keys.PageDown || e.KeyCode == Keys.PageUp) { Go(Page + (e.KeyCode == Keys.PageDown ? 1 : -1)); e.Handled = true; } };
         grid.ColumnHeaderMouseClick += (s, e) => Sort(grid.Columns[e.ColumnIndex]); grid.CurrentCellChanged += (s, e) => { if (!rendering) ShowMod(Current); };
@@ -37,31 +39,34 @@ partial class SotfModsManager {
         prev = Btn(Prev, null, () => Go(Page - 1), Surface, 40, "Previous page (Page Up)"); next = Btn(Next, null, () => Go(Page + 1), Surface, 40, "Next page (Page Down)"); pages = Group(DockStyle.Right);
         var reload = Btn(Reload, null, LoadMods, Raised, 40, "Reload mod list"); reload.Dock = DockStyle.Right;
         var searchField = Field(search, 300, SearchIcon); searchField.Dock = DockStyle.Left; search.TextChanged += (s, e) => Filter(true);
-        SendMessage(search.Handle, 0x1501, (IntPtr)1, "Search mods or authors"); // EM_SETCUEBANNER placeholder
+        SendMessage(search.Handle, 0x1501, (IntPtr)1, "Search mods, builds or authors"); // EM_SETCUEBANNER placeholder
         var list = new Panel { Dock = DockStyle.Fill, Padding = new Padding(24, 0, 16, 0) }; var sortMenu = NewMenu(); sortBtn = Dropdown(SortIcon, 200, "Sort mods", sortMenu); sortBtn.Text = Sorts[0][0];
         sortMenu.Opening += (s, e) => { sortMenu.Items.Clear(); foreach (var o in Sorts) { var x = o; sortMenu.Items.Add(new ToolStripMenuItem(o[0], null, (a, b) => SortBy(x[1])) { Checked = o[1] == mods.DefaultView.Sort }); } };
-        list.Controls.AddRange(new Control[] { grid, Strip(64, 40, Bg, showing, pages, new Panel { Dock = DockStyle.Left, Width = 16 }, sortBtn) }); list.Controls[1].Dock = DockStyle.Bottom;
+        nsfwBtn = Btn(Unchecked, "NSFW", () => { nsfw = !nsfw; nsfwBtn.Image = Glyph(nsfw ? Checked : Unchecked); Tint(nsfwBtn, nsfw ? Line : Raised); Filter(true); }, Raised, 100, "Show mods and builds marked NSFW"); nsfwBtn.Dock = DockStyle.Left;
+        list.Controls.AddRange(new Control[] { grid, Strip(64, 40, Bg, showing, pages, new Panel { Dock = DockStyle.Left, Width = 16 }, nsfwBtn, new Panel { Dock = DockStyle.Left, Width = 8 }, sortBtn) }); list.Controls[1].Dock = DockStyle.Bottom;
         var body = new Panel { Dock = DockStyle.Fill }; body.Controls.AddRange(new Control[] { list, SetupDetails() });
         return new Control[] { body, Strip(64, 40, Bg, Group(DockStyle.Right, tabs), new Panel { Dock = DockStyle.Right, Width = 8 }, reload, searchField, new Panel { Dock = DockStyle.Left, Width = 8 }, SetupProfiles()) };
     }
 
-    async void LoadMods() { // approved Sons of the Forest mods only (type Mod leaves out builds); every mod on sotf-mods.com runs on RedLoader
+    async void LoadMods() { // approved mods and BuildShare builds; every mod on sotf-mods.com runs on RedLoader and every build needs BuildShare
         empty = "Loading mods"; grid.Invalidate();
-        try { using (var web = Web()) for (int page = 1, count = 1; page <= count; page++) { // the API serves at most 1000 mods per page
-                var json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Deserialize<Dictionary<string, object>>(await web.DownloadStringTaskAsync(SiteUrl + "/api/mods?type=Mod&approved=true&limit=1000&page=" + page));
-                count = Convert.ToInt32(((Dictionary<string, object>)json["meta"])["pages"]); if (page == 1) mods.Rows.Clear(); // cleared only after a good answer, so a failed reload keeps the list
+        try { var rows = new List<object[]>(); using (var web = Web()) foreach (var kind in new[] { "Mod", Build }) foreach (var only in new[] { "", "&nsfw=true" }) for (int page = 1, count = 1; page <= count; page++) { // the API serves at most 1000 per page and NSFW ones only when asked
+                var json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Deserialize<Dictionary<string, object>>(await web.DownloadStringTaskAsync(SiteUrl + "/api/mods?type=" + kind + only + "&approved=true&limit=1000&page=" + page));
+                count = Convert.ToInt32(((Dictionary<string, object>)json["meta"])["pages"]); bool build = kind == Build;
                 foreach (Dictionary<string, object> m in (IEnumerable)json["data"]) { var u = (Dictionary<string, object>)m["user"]; var cat = m["category"] as Dictionary<string, object>;
                     var shots = new[] { m["imageUrl"] as string }.Concat(((IEnumerable)m["images"] ?? new object[0]).Cast<Dictionary<string, object>>().Select(i => i["url"] as string)).Where(x => !string.IsNullOrEmpty(x)).Distinct();
-                    mods.Rows.Add(m["name"], u["name"], "by " + u["name"] + (cat == null ? "" : " in " + cat["name"]), Convert.ToInt32(m["downloads"]), DateTime.Parse((string)(m["lastReleasedAt"] ?? m["updatedAt"])), "", m["latestVersion"], "",
-                        m["mod_id"], u["slug"], m["slug"], IdList(m, "dependencies"), IdList(m, "incompatibilities"), string.Join("\n", shots), m["description"] ?? m["shortDescription"]); } }
+                    rows.Add(new[] { m["name"], u["name"], "by " + u["name"] + (cat == null ? "" : " in " + cat["name"]), Convert.ToInt32(m["downloads"]), DateTime.Parse((string)(m["lastReleasedAt"] ?? m["updatedAt"])), "",
+                        build ? (m["numberOfElements"] == null ? "" : m["numberOfElements"] + " pieces") : m["latestVersion"], "", m["mod_id"], u["slug"], m["slug"], build ? "BuildShare" : IdList(m, "dependencies"),
+                        IdList(m, "incompatibilities"), string.Join("\n", shots), m["description"] ?? m["shortDescription"], kind, m["latestVersion"], true.Equals(m["isNSFW"]) ? "1" : "" }); } }
+            mods.Rows.Clear(); foreach (var r in rows) mods.Rows.Add(r); // replaced only after every answer is good, so a failed reload keeps the list
             RefreshState(); if (opened != null) { OpenShared(opened); opened = null; } // needs the mod list
         } catch (Exception ex) { empty = "Could not load mods"; grid.Invalidate(); Toast(Fail, "Could not load mods: " + ex.Message, "Retry", LoadMods); }
     }
 
     void Filter(bool top = false) { // search, tab and tab counts; top goes back to the first page
         var q = Regex.Replace(search.Text.Trim().Replace("'", "''"), @"[\[\]\*%]", "[$0]");
-        mods.DefaultView.RowFilter = "(Name LIKE '*" + q + "*' OR Author LIKE '*" + q + "*')" + (view > 0 ? " AND " + Views[view][1] : "");
-        for (var i = 0; i < tabs.Length; i++) { tabs[i].Text = Views[i][0] + "  " + mods.Select(Views[i][1]).Length; Tint(tabs[i], i == view ? Line : Surface); tabs[i].ForeColor = i == view ? Fg : Muted; }
+        var safe = nsfw ? "" : " AND Nsfw = ''"; mods.DefaultView.RowFilter = "(Name LIKE '*" + q + "*' OR Author LIKE '*" + q + "*') AND " + Views[view][1] + safe;
+        for (var i = 0; i < tabs.Length; i++) { tabs[i].Text = Views[i][0] + "  " + mods.Select(Views[i][1] + safe).Length; Tint(tabs[i], i == view ? Line : Surface); tabs[i].ForeColor = i == view ? Fg : Muted; }
         if (top) first = 0; Render();
     }
     void Sort(DataGridViewColumn c) { // header click: names start A to Z, numbers and dates high to low; a second click flips it
@@ -78,7 +83,7 @@ partial class SotfModsManager {
         for (var i = first; i < Math.Min(total, first + size); i++) { var r = dv[i].Row; grid.Rows[grid.Rows.Add(null, r["Name"], r["Downloads"], r["Updated"], r["Latest"], r["Action"])].Tag = r; }
         var at = grid.Rows.Cast<DataGridViewRow>().FirstOrDefault(x => x.Tag == shown) ?? (grid.Rows.Count > 0 ? grid.Rows[0] : null); // the shown mod stays selected while it is on the page
         if (at != null) grid.CurrentCell = at.Cells[1]; rendering = false; ShowMod(Current);
-        showing.Text = total == 0 ? "" : "Showing " + (first + 1) + " to " + Math.Min(total, first + size) + " of " + Plural(total, "mod");
+        showing.Text = total == 0 ? "" : "Showing " + (first + 1) + " to " + Math.Min(total, first + size) + " of " + Plural(total, view == 4 ? "build" : "mod");
         var items = new List<Control> { prev }; for (int p = 0, last = -1; p < count; p++) if (p == 0 || p == count - 1 || Math.Abs(p - page) <= 2) { // first, last and the pages around the current one
             if (p > last + 1) items.Add(new Label { Text = "...", Size = new Size(32, 40), BackColor = Surface, ForeColor = Muted, TextAlign = ContentAlignment.MiddleCenter });
             var n = p; items.Add(Btn('\0', (p + 1).ToString(), () => Go(n), p == page ? Red : Surface, 40)); last = p; }

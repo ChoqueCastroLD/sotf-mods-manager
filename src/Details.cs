@@ -19,7 +19,7 @@ partial class SotfModsManager {
         for (var i = 0; i < 3; i++) { table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3f));
             table.Controls.Add(new Label { Text = names[i], ForeColor = Muted, Font = Small, AutoSize = true, Margin = new Padding(0) }, i, 0); table.Controls.Add(facts[i] = new Label { AutoSize = true, Font = Bold, Margin = new Padding(0, 2, 0, 0) }, i, 1); }
         modBtn = Btn('\0', "Install", () => { if ((string)shown["Action"] == Manual) OpenLog(Path.Combine(Game, "Mods")); else Act(shown); }, Red, 170);
-        var actions = new Panel { Dock = DockStyle.Top, Height = 56, Padding = new Padding(0, 8, 0, 8) }; actions.Controls.Add(Group(DockStyle.Left, modBtn, pageBtn = Btn(OpenIcon, "Mod page", () => Process.Start(SiteUrl + "/mods/" + shown["User"] + "/" + shown["Slug"]), Raised, 140)));
+        var actions = new Panel { Dock = DockStyle.Top, Height = 56, Padding = new Padding(0, 8, 0, 8) }; actions.Controls.Add(Group(DockStyle.Left, modBtn, pageBtn = Btn(OpenIcon, "Mod page", () => Process.Start(SiteUrl + ((string)shown["Kind"] == Build ? "/builds/" : "/mods/") + shown["User"] + "/" + shown["Slug"]), Raised, 140)));
         desc.HandleCreated += (s, e) => SetWindowTheme(desc.Handle, "DarkMode_Explorer", null); // dark scroll bar on Windows 10 1809 and later
         details.Controls.AddRange(new Control[] { desc, needs, actions, table, byline, title, shotBar, gallery }); // docked bottom to top
         return details;
@@ -29,7 +29,7 @@ partial class SotfModsManager {
         if (r != shown) { shown = r; shots = ((string)r["Gallery"]).Split('\n'); shot = 0; Shot(0); ForgetPictures(640, shots); Describe(r["Description"] as string);
             title.Text = (string)r["Name"]; byline.Text = (string)r["Byline"]; facts[1].Text = ((int)r["Downloads"]).ToString("N0"); facts[2].Text = ((DateTime)r["Updated"]).ToString("yyyy-MM-dd");
             needs.Text = "Needs RedLoader" + string.Concat(Ids(r["Deps"]).Select(id => ", " + (ById(id) == null ? id : ById(id)["Name"]))); tip.SetToolTip(needs, needs.Text); }
-        var a = (string)r["Action"]; facts[0].Text = (string)r["Latest"]; modBtn.Text = a == Manual ? "Mods folder" : a == Installed ? "Reinstall" : a == "Update" ? "Update to " + r["Latest"] : "Install"; Tint(modBtn, Pending(r) ? Red : Line); pageBtn.Visible = a != Manual;
+        var a = (string)r["Action"]; facts[0].Text = (string)r["Latest"]; modBtn.Text = a == Manual ? "Mods folder" : a == Installed ? "Reinstall" : a == "Update" ? "Update to " + r["Latest"] : "Install"; Tint(modBtn, Pending(r) ? Red : Line); pageBtn.Visible = a != Manual; pageBtn.Text = (string)r["Kind"] == Build ? "Build page" : "Mod page";
         if (a == Manual) facts[1].Text = "Not listed"; shotBar.Visible = shots.Length > 1;
     }
     void Shot(int step) { shot = (shot + step + shots.Length) % shots.Length; counter.Text = "Picture " + (shot + 1) + " of " + shots.Length; gallery.Invalidate(); }

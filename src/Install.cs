@@ -30,7 +30,7 @@ partial class SotfModsManager {
         Run((Pending(r) ? "Installing " : "Reinstalling ") + r["Name"], async t => {
             EnsureClosed(); if (LoaderVersion == null) throw new Exception("install RedLoader first.");
             foreach (var x in remove) RemoveMod(x); foreach (var d in adding) await InstallMod(d, t); // dependencies first
-            return r["Name"] + " " + r["Latest"] + " installed" + (deps.Count > 0 ? " with " + Names(deps) : "") + (remove.Count > 0 ? ", " + Names(remove) + " removed" : ""); });
+            return r["Name"] + ((string)r["Kind"] == Build ? "" : " " + r["Latest"]) + " installed" + (deps.Count > 0 ? " with " + Names(deps) : "") + (remove.Count > 0 ? ", " + Names(remove) + " removed" : ""); });
     }
     IEnumerable<DataRow> Deps(DataRow r, HashSet<DataRow> seen) { // every dependency on sotf-mods.com, deepest first
         foreach (var d in Ids(r["Deps"]).Select(ById).Where(d => d != null && seen.Add(d)).ToList()) { foreach (var x in Deps(d, seen)) yield return x; yield return d; } }
@@ -39,11 +39,17 @@ partial class SotfModsManager {
     string ModPath(DataRow r) { var id = (string)r["Id"]; if (!Regex.IsMatch(id, @"^[\w.-]+$")) throw new Exception("invalid mod id."); return Path.Combine(Game, "Mods", id); }
     void RemoveMod(DataRow r) { var p = ModPath(r); File.Delete(p + ".dll"); TryDelete(p); }
     async Task InstallMod(DataRow r, Panel t) {
-        string game = Game, dll = ModPath(r) + ".dll";
-        await Fetch(SiteUrl + "/api/mods/slug/" + Esc(r["User"]) + "/" + Esc(r["Slug"]) + "/download/" + Esc(r["Latest"]), (string)r["Name"], t, f => {
+        string game = Game, dll = ModPath(r) + ".dll", id = (string)r["Id"], build; var isBuild = (string)r["Kind"] == Build;
+        if (!builds.TryGetValue(id, out build)) build = Path.Combine(LocalBuildings, id + ".json"); // a build already there by another name is replaced, not duplicated
+        await Fetch(SiteUrl + "/api/mods/slug/" + Esc(r["User"]) + "/" + Esc(r["Slug"]) + "/download/" + Esc(r["Release"]), (string)r["Name"], t, f => {
+            if (isBuild) { Directory.CreateDirectory(LocalBuildings); File.Copy(f, build, true); return; } // BuildShare loads every json in LocalBuildings
             bool zip; using (var s = File.OpenRead(f)) zip = s.ReadByte() == 'P' && s.ReadByte() == 'K'; // a mod is a zip or a bare dll
             if (zip) Extract(f, game); else { Directory.CreateDirectory(Path.GetDirectoryName(dll)); File.Copy(f, dll, true); } });
     }
+    Dictionary<string, string> builds = new Dictionary<string, string>(); // installed build guid to its file
+    string LocalBuildings { get { return Path.Combine(Game, @"Mods\BuildShare\LocalBuildings"); } }
+    static readonly Regex BuildGuid = new Regex("\"Guid\"\\s*:\\s*\"(\\w+)\"");
+    static string Head(string file) { using (var s = new StreamReader(file)) { var b = new char[1024]; return new string(b, 0, s.Read(b, 0, b.Length)); } } // the guid sits at the start of a build file
     async Task Fetch(string url, string what, Panel t, Action<string> apply, string ext = "") { // download to a temp file, apply it off the UI thread, always clean up
         var tmp = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ext);
         try { using (var web = Web()) {

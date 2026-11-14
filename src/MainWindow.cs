@@ -47,12 +47,15 @@ partial class SotfModsManager : Form {
         deps.Text = (VcInstalled() ? "Visual C++ runtime installed" : "Visual C++ runtime missing, installed with RedLoader") + "\n.NET runtime bundled with RedLoader";
         loaderBtn.Text = v == null ? "Install" : old ? "Update to " + latest : "Repair"; Tint(loaderBtn, v == null || old ? Red : Raised); loaderBtn.Enabled = play.Enabled = Valid; profileBtn.Text = Valid ? Active : "Profiles";
         foreach (var r in mods.Select("Action = '" + Manual + "'")) mods.Rows.Remove(r);
-        foreach (DataRow r in mods.Rows) { var id = (string)r["Id"]; var have = Valid ? JsonVersion(@"Mods\" + id + @"\manifest.json", @"Mods\" + id + ".dll") : null; var upd = have != null && Newer((string)r["Latest"], have);
+        builds = Valid && Directory.Exists(LocalBuildings) ? Directory.GetFiles(LocalBuildings, "*.json").Select(f => new { f, m = BuildGuid.Match(Head(f)) }).Where(x => x.m.Success)
+            .GroupBy(x => x.m.Groups[1].Value, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First().f, StringComparer.OrdinalIgnoreCase) : new Dictionary<string, string>();
+        foreach (DataRow r in mods.Select("Kind = 'Build'")) { r["Installed"] = ""; r["Action"] = builds.ContainsKey((string)r["Id"]) ? Installed : "Install"; }
+        foreach (DataRow r in mods.Select(ModsOnly)) { var id = (string)r["Id"]; var have = Valid ? JsonVersion(@"Mods\" + id + @"\manifest.json", @"Mods\" + id + ".dll") : null; var upd = have != null && Newer((string)r["Latest"], have);
             r["Installed"] = upd ? "Installed " + have : ""; r["Action"] = have == null ? "Install" : upd ? "Update" : Installed; }
         if (Valid && Directory.Exists(Path.Combine(Game, "Mods"))) foreach (var dll in Directory.GetFiles(Path.Combine(Game, "Mods"), "*.dll")) { // mods added by hand: listed, but not managed
             var id = Path.GetFileNameWithoutExtension(dll); if (ById(id) != null) continue; var m = Manifest(id); Func<string, string> f = k => m.ContainsKey(k) ? m[k] as string : null;
             mods.Rows.Add(f("name") ?? id, f("author") ?? "", "Installed manually" + (f("author") == null ? "" : " by " + f("author")), 0, File.GetLastWriteTime(dll), "", f("version") ?? "unknown", Manual, id, "", "", "", "", "",
-                (f("description") ?? "") + "\n\nThis mod is not on sotf-mods.com, so it was installed by hand. The manager lists it but does not update or remove it. Its files are in the Mods folder."); }
+                (f("description") ?? "") + "\n\nThis mod is not on sotf-mods.com, so it was installed by hand. The manager lists it but does not update or remove it. Its files are in the Mods folder.", "Mod", "", ""); }
         if (!Valid) settings.Visible = true; Filter();
     }
 }
