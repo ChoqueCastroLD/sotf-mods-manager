@@ -22,7 +22,7 @@ Windows SmartScreen may warn you the first time because the exe isn't signed. Cl
 
 - Shows every approved Sons of the Forest mod on sotf-mods.com, with its picture, author and category. All of them run on RedLoader.
 - Tabs: **All**, **Not installed**, **Installed** and **Updates**, each with its count.
-- Click a column header to sort by name, downloads, release date or version.
+- Sort with the button under the list (most or least downloaded, recently updated, name), or click the Mod, Downloads or Updated header. The sorted column shows an arrow.
 - Search by mod name or author.
 - Pages show exactly the mods that fit in the window. Use the numbered page buttons, the arrows, the mouse wheel or Page Up and Page Down.
 - When a mod you have gets a new release, its button turns red and reads **Update**, and the version column shows which one you have.
@@ -50,6 +50,16 @@ A profile is its own set of mods, for example one for solo and one for playing w
 - **Export**: saves a small `.sotfprofile` file with the list of mods, to share with other players.
 - **Import**: opens a `.sotfprofile` file, creates a new profile and downloads its mods and their dependencies from sotf-mods.com.
 - **Delete**: removes the active profile and its mods, then switches to another one.
+
+### Modpacks
+
+Modpacks are profiles shared on sotf-mods.com. Install one in any of these ways, and it becomes a new profile with its mods and their dependencies:
+
+- **Install modpack from link** in the profile menu: paste the modpack's link.
+- Double-click a downloaded `.sotfprofile` file.
+- Click **Open in launcher** on the modpack's page, which uses a `sotfmm://modpack/user/slug` link.
+
+The manager registers `.sotfprofile` files and `sotfmm://` links for your Windows user each time it starts. No admin rights are needed.
 
 ## RedLoader and dependencies
 

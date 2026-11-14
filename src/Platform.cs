@@ -16,6 +16,12 @@ partial class SotfModsManager {
     static string Esc(object s) { return Uri.EscapeDataString((string)s); }
     static void MoveItem(string from, string to) { if (File.Exists(from)) File.Move(from, to); else if (Directory.Exists(from)) Directory.Move(from, to); }
     static void TryDelete(string dir) { try { if (Directory.Exists(dir)) Directory.Delete(dir, true); } catch { } }
+    static void Register() { // per user, no admin rights: double-clicking a .sotfprofile file or an "Open in launcher" link (sotfmm://modpack/user/slug) opens this app
+        var open = "\"" + Application.ExecutablePath + "\" \"%1\"";
+        try { foreach (var k in new[] { new[] { ".sotfprofile", "", "SotfModsManager.Profile" }, new[] { @"SotfModsManager.Profile\shell\open\command", "", open },
+                new[] { "sotfmm", "", "URL:SotF Mods Manager" }, new[] { "sotfmm", "URL Protocol", "" }, new[] { @"sotfmm\shell\open\command", "", open } })
+            Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\" + k[0], k[1], k[2]); } catch { }
+    }
     static WebClient Web() { var w = new WebClient { Encoding = System.Text.Encoding.UTF8 }; w.Headers["User-Agent"] = "SotfModsManager/" + AppVersion; return w; }
     static async Task<string> LatestTag(string repo) { // null when offline or rate limited
         try { using (var web = Web()) return Regex.Match(await web.DownloadStringTaskAsync("https://api.github.com/repos/" + repo + "/releases/latest"), "\"tag_name\"\\s*:\\s*\"([^\"]+)\"").Groups[1].Value; } catch { return null; } }

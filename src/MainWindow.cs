@@ -7,13 +7,13 @@ partial class SotfModsManager : Form {
     Label loaderState = new Label { Dock = DockStyle.Fill, ForeColor = Muted, Font = F(9.5f) }, deps = new Label { Dock = DockStyle.Right, Width = 330, ForeColor = Muted, Font = F(9f), TextAlign = ContentAlignment.MiddleLeft };
     TextBox gamePath = Box(), version = Box(), search = Box();
     FlowLayoutPanel settings = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 250, BackColor = Surface, Padding = new Padding(21, 0, 24, 14), Visible = false };
-    Button play, loaderBtn; string latest;
+    Button play, loaderBtn; string latest; static string opened; // the file or link Windows started the app with
 
     [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern IntPtr SendMessage(IntPtr hwnd, int msg, IntPtr wParam, string lParam);
-    [STAThread] static void Main() {
+    [STAThread] static void Main(string[] args) {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12; ServicePointManager.DefaultConnectionLimit = 6; // thumbnails download in parallel
-        Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false); Application.Run(new SotfModsManager());
+        Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false); Register(); opened = args.FirstOrDefault(); Application.Run(new SotfModsManager());
     }
 
     SotfModsManager() {

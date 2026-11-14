@@ -3,16 +3,26 @@ using System; using System.Drawing; using System.Linq; using System.Runtime.Inte
 
 partial class SotfModsManager {
     const char Play = '', Gear = '', Folder = '', Reload = '', Remove = '', Shield = '', SearchIcon = '', Prev = '', Next = '',
-        CloseIcon = '', InfoIcon = '', Busy = '', Done = '', Fail = '', OpenIcon = '';
+        CloseIcon = '', InfoIcon = '', Busy = '', Done = '', Fail = '', OpenIcon = '', SortIcon = '';
     // Black and blood red, like the game's own menus. Hot is the hover color of anything drawn on Line.
     static readonly Color Bg = C(0x0D0B0B), Surface = C(0x171313), Raised = C(0x241D1D), Line = C(0x342A2A), Hot = C(0x4A3B3B), Fg = C(0xEFE8E5), Muted = C(0x9A8E8B), Red = C(0xB3231A), RedHover = C(0xCF3324);
     // Segoe UI is hinted for ClearType, so it stays sharp at every size (Segoe UI Variable looks soft in WinForms)
     static readonly string IconFont = HasFont("Segoe Fluent Icons") ? "Segoe Fluent Icons" : "Segoe MDL2 Assets"; // Windows 11, else Windows 10
-    static readonly Font Small = F(9f), Body = F(10f), Bold = F(10f, true);
+    static readonly Font Small = F(9f), SmallBold = F(9f, true), Body = F(10f), Bold = F(10f, true), Arrow = new Font(IconFont, 8f);
     const TextFormatFlags Center = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix;
     ToolTip tip = new ToolTip();
 
     [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)] static extern int SetWindowTheme(IntPtr hwnd, string app, string idList);
+    static ContextMenuStrip NewMenu() { return new ContextMenuStrip { Renderer = new ToolStripProfessionalRenderer(new DarkMenu()), ShowImageMargin = false, ShowCheckMargin = true, ForeColor = Fg, Font = Body }; }
+    Button Dropdown(char icon, int w, string hint, ContextMenuStrip menu) { // a button that opens a menu below it; its text shows the current choice
+        Button b = null; b = Btn(icon, "", () => menu.Show(b, 0, b.Height), Raised, w, hint); b.Dock = DockStyle.Left; b.TextAlign = b.ImageAlign = ContentAlignment.MiddleLeft; b.Padding = new Padding(10, 0, 0, 0); b.AutoEllipsis = true; return b; }
+    class DarkMenu : ProfessionalColorTable { // dark menus with the app colors
+        public override Color ToolStripDropDownBackground { get { return Raised; } } public override Color MenuBorder { get { return Line; } }
+        public override Color MenuItemSelected { get { return Line; } } public override Color MenuItemBorder { get { return Line; } }
+        public override Color ImageMarginGradientBegin { get { return Raised; } } public override Color ImageMarginGradientMiddle { get { return Raised; } } public override Color ImageMarginGradientEnd { get { return Raised; } }
+        public override Color SeparatorDark { get { return Line; } } public override Color SeparatorLight { get { return Raised; } }
+        public override Color CheckBackground { get { return Raised; } } public override Color CheckSelectedBackground { get { return Line; } } public override Color CheckPressedBackground { get { return Line; } }
+    }
     static Color C(int rgb) { return Color.FromArgb(rgb >> 16, (rgb >> 8) & 255, rgb & 255); }
     static bool HasFont(string name) { return new System.Drawing.Text.InstalledFontCollection().Families.Any(f => f.Name == name); }
     static Font F(float size, bool bold = false) { return new Font(bold ? "Segoe UI Semibold" : "Segoe UI", size); } // type scale: 16 title, 13 mod, 10.5 section, 10 body, 9 meta
