@@ -20,15 +20,29 @@ partial class SotfModsManager {
         await Fetch(LoaderRepo + (v == "" || v == "latest" ? "latest/download" : "download/" + Uri.EscapeDataString(v)) + "/Redloader.zip", "RedLoader", t, f => Extract(f, game));
         return "RedLoader installed. The first start can take a few minutes.";
     }
-    async Task<string> InstallMod(DataRow r, Panel t, HashSet<string> seen) {
-        EnsureClosed(); if (LoaderVersion == null) throw new Exception("install RedLoader first.");
-        string id = (string)r["Id"], game = Game, dll = Path.Combine(game, "Mods", id + ".dll"); if (!Regex.IsMatch(id, @"^[\w.-]+$")) throw new Exception("invalid mod id.");
-        foreach (var dep in ((string)r["Deps"]).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)) { // dependencies first
-            var d = mods.Rows.Cast<DataRow>().FirstOrDefault(x => (string)x["Id"] == dep); if (d != null && seen.Add(dep) && (string)d["Action"] != Installed) await InstallMod(d, t, seen); }
+    void Act(DataRow r) { // asks first when the mod brings dependencies or clashes with installed mods
+        var deps = Deps(r, new HashSet<DataRow> { r }).Where(Pending).ToList(); var adding = deps.Concat(new[] { r }).ToList();
+        var clashes = mods.Rows.Cast<DataRow>().Where(x => !Pending(x) && !adding.Contains(x) && adding.Any(a => Ids(a["Clashes"]).Contains((string)x["Id"]) || Ids(x["Clashes"]).Contains((string)a["Id"]))).ToList();
+        string text = deps.Count == 0 ? "" : r["Name"] + " needs " + Names(deps) + ". " + (deps.Count == 1 ? "It" : "They") + " will be installed too.";
+        if (clashes.Count > 0) text += (text == "" ? "" : "\n\n") + r["Name"] + " does not work with " + Names(clashes) + ", which " + (clashes.Count == 1 ? "is" : "are") + " installed.";
+        var choice = text == "" ? "" : Ask("Install " + r["Name"], text, clashes.Count > 0 ? new[] { "Remove " + Names(clashes) + " and install", "Install anyway", "Cancel" } : new[] { "Install all", "Cancel" });
+        if (choice == null || choice == "Cancel") return; var remove = choice.StartsWith("Remove") ? clashes : new List<DataRow>();
+        Run((Pending(r) ? "Installing " : "Reinstalling ") + r["Name"], async t => {
+            EnsureClosed(); if (LoaderVersion == null) throw new Exception("install RedLoader first.");
+            foreach (var x in remove) RemoveMod(x); foreach (var d in adding) await InstallMod(d, t); // dependencies first
+            return r["Name"] + " " + r["Latest"] + " installed" + (deps.Count > 0 ? " with " + Names(deps) : "") + (remove.Count > 0 ? ", " + Names(remove) + " removed" : ""); });
+    }
+    IEnumerable<DataRow> Deps(DataRow r, HashSet<DataRow> seen) { // every dependency on sotf-mods.com, deepest first
+        foreach (var d in Ids(r["Deps"]).Select(ById).Where(d => d != null && seen.Add(d)).ToList()) { foreach (var x in Deps(d, seen)) yield return x; yield return d; } }
+    static string[] Ids(object list) { return ((string)list).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries); }
+    static string Names(IEnumerable<DataRow> rows) { return string.Join(", ", rows.Select(x => (string)x["Name"])); }
+    string ModPath(DataRow r) { var id = (string)r["Id"]; if (!Regex.IsMatch(id, @"^[\w.-]+$")) throw new Exception("invalid mod id."); return Path.Combine(Game, "Mods", id); }
+    void RemoveMod(DataRow r) { var p = ModPath(r); File.Delete(p + ".dll"); TryDelete(p); }
+    async Task InstallMod(DataRow r, Panel t) {
+        string game = Game, dll = ModPath(r) + ".dll";
         await Fetch(SiteUrl + "/api/mods/slug/" + Esc(r["User"]) + "/" + Esc(r["Slug"]) + "/download/" + Esc(r["Latest"]), (string)r["Name"], t, f => {
             bool zip; using (var s = File.OpenRead(f)) zip = s.ReadByte() == 'P' && s.ReadByte() == 'K'; // a mod is a zip or a bare dll
             if (zip) Extract(f, game); else { Directory.CreateDirectory(Path.GetDirectoryName(dll)); File.Copy(f, dll, true); } });
-        return r["Name"] + " " + r["Latest"] + " installed";
     }
     async Task Fetch(string url, string what, Panel t, Action<string> apply, string ext = "") { // download to a temp file, apply it off the UI thread, always clean up
         var tmp = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ext);

@@ -20,13 +20,36 @@ Windows SmartScreen may warn you the first time because the exe isn't signed. Cl
 
 ![installed mods](docs/installed.png)
 
-- Shows every approved Sons of the Forest mod on sotf-mods.com, with its picture and description. All of them run on RedLoader.
+- Shows every approved Sons of the Forest mod on sotf-mods.com, with its picture, author and category. All of them run on RedLoader.
 - Tabs: **All**, **Not installed**, **Installed** and **Updates**, each with its count.
-- Click a column header to sort by name, author, downloads, release date or version.
+- Click a column header to sort by name, downloads, release date or version.
 - Search by mod name or author.
-- Pages show exactly the mods that fit in the window. Use the arrows or the mouse wheel to change page.
+- Pages show exactly the mods that fit in the window. Use the numbered page buttons, the arrows, the mouse wheel or Page Up and Page Down.
 - When a mod you have gets a new release, its button turns red and reads **Update**, and the version column shows which one you have.
-- Dependencies are installed first, automatically. Double-click a mod to open its page.
+
+### Mod details
+
+![mod details](docs/gallery.png)
+
+Select a mod to see its picture gallery, version, downloads, release date, dependencies and full description on the right. Click a picture to open it at full size.
+
+### Dependencies and incompatibilities
+
+![install dialog](docs/install-dialog.png)
+
+Before installing, the manager tells you which dependencies it will install with the mod, and installs them first. If the mod does not work with a mod you have, it names it and lets you remove it and install, install anyway, or cancel. Incompatibilities come from the `incompatibilities` list of each mod on sotf-mods.com.
+
+## Profiles
+
+![new profile](docs/new-profile.png)
+
+A profile is its own set of mods, for example one for solo and one for playing with friends. Use the profile button next to the search box to:
+
+- **Switch** between profiles. The mods of the other profiles wait in `.sotfmm-profiles` inside the game folder, so switching only moves folders: instant, with no downloads.
+- **New profile**: starts empty. The mods you have stay in the previous profile.
+- **Export**: saves a small `.sotfprofile` file with the list of mods, to share with other players.
+- **Import**: opens a `.sotfprofile` file, creates a new profile and downloads its mods and their dependencies from sotf-mods.com.
+- **Delete**: removes the active profile and its mods, then switches to another one.
 
 ## RedLoader and dependencies
 
@@ -53,8 +76,8 @@ Every task shows a notification in the bottom right corner that goes from progre
 
 ## Lightweight by design
 
-- A single ~55 KB native exe on .NET Framework 4.8, which comes with Windows. No runtime to download.
-- No external libraries. Icons come from the Windows icon font, text uses Segoe UI Variable (Segoe UI on Windows 10) and WebP pictures are decoded by Windows itself.
+- A single ~85 KB native exe on .NET Framework 4.8, which comes with Windows. No runtime to download.
+- No external libraries. Icons come from the Windows icon font, text uses Segoe UI and WebP pictures are decoded by Windows itself.
 - Only the mods on the current page become rows, and a picture is downloaded the first time it's shown. Pictures are the site's 320 px copies, resized to the thumbnail and cached in `%LOCALAPPDATA%\SotfModsManager\thumbs`.
 - Downloads, decoding and extraction run in the background, so the window stays responsive on low-end PCs.
 
@@ -71,8 +94,11 @@ Every task shows a notification in the bottom right corner that goes from progre
 |---|---|
 | [MainWindow.cs](src/MainWindow.cs) | Builds the window and keeps its state |
 | [ModList.cs](src/ModList.cs) | Loads, filters, sorts, pages and draws the mod list |
+| [Details.cs](src/Details.cs) | The details panel: gallery, facts and description |
+| [Pictures.cs](src/Pictures.cs) | Downloads, decodes and caches pictures |
 | [Install.cs](src/Install.cs) | Installs RedLoader, mods and dependencies; uninstall, Defender, Play |
-| [Toasts.cs](src/Toasts.cs) | Notifications |
+| [Profiles.cs](src/Profiles.cs) | Mod profiles: switch, create, delete, export and import |
+| [Toasts.cs](src/Toasts.cs) | Notifications and the confirmation dialog |
 | [Ui.cs](src/Ui.cs) | Theme and reusable UI building blocks |
 | [Platform.cs](src/Platform.cs) | Game folder, versions, files and network |
 
