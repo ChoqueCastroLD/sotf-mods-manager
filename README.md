@@ -55,7 +55,7 @@ Every task shows a notification in the bottom right corner that goes from progre
 
 - A single ~55 KB native exe on .NET Framework 4.8, which comes with Windows. No runtime to download.
 - No external libraries. Icons come from the Windows icon font, text uses Segoe UI Variable (Segoe UI on Windows 10) and WebP pictures are decoded by Windows itself.
-- Only the mods on the current page become rows, and a picture is downloaded the first time it's shown. Pictures are the site's 320 px copies, resized to the thumbnail and cached in `%LOCALAPPDATA%\SotfModsManager	humbs`.
+- Only the mods on the current page become rows, and a picture is downloaded the first time it's shown. Pictures are the site's 320 px copies, resized to the thumbnail and cached in `%LOCALAPPDATA%\SotfModsManager\thumbs`.
 - Downloads, decoding and extraction run in the background, so the window stays responsive on low-end PCs.
 
 ## How it works
