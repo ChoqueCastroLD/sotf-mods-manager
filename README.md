@@ -14,16 +14,19 @@ Made by [sotf-mods.com](https://sotf-mods.com) for the community.
 
 You don't need to install .NET or move files by hand. The manager finds your game and installs anything that's missing.
 
-Windows SmartScreen may warn you the first time because the exe isn't signed. Click **More info**, then **Run anyway**. You can read the [whole source code](SotfModsManager.cs) or build it yourself (see below).
+Windows SmartScreen may warn you the first time because the exe isn't signed. Click **More info**, then **Run anyway**. You can read the [whole source code](src) or build it yourself (see below).
 
 ## Mod list
 
-- Shows every approved Sons of the Forest mod on sotf-mods.com. All of them run on RedLoader.
-- Click a column header to sort by name, author, category, downloads, release date or version.
-- Search by mod name or author, and tick **Hide installed** to see only what you don't have yet.
-- When a mod you have gets a new release, its button turns red and reads **Update**.
-- Dependencies are installed first, automatically.
-- Hover a mod to read its description. Double-click it to open its page.
+![installed mods](docs/installed.png)
+
+- Shows every approved Sons of the Forest mod on sotf-mods.com, with its picture and description. All of them run on RedLoader.
+- Tabs: **All**, **Not installed**, **Installed** and **Updates**, each with its count.
+- Click a column header to sort by name, author, downloads, release date or version.
+- Search by mod name or author.
+- Pages show exactly the mods that fit in the window. Use the arrows or the mouse wheel to change page.
+- When a mod you have gets a new release, its button turns red and reads **Update**, and the version column shows which one you have.
+- Dependencies are installed first, automatically. Double-click a mod to open its page.
 
 ## RedLoader and dependencies
 
@@ -46,15 +49,14 @@ Windows SmartScreen may warn you the first time because the exe isn't signed. Cl
 
 ## Feedback
 
-![notifications](docs/toasts.png)
-
 Every task shows a notification in the bottom right corner that goes from progress (with downloaded MB) to success or error. Errors stay until you close them and offer **Retry**. On startup the manager checks for new RedLoader and SotF Mods Manager releases, and skips the check silently when offline.
 
 ## Lightweight by design
 
-- A single ~45 KB native exe on .NET Framework 4.8, which comes with Windows. No runtime to download.
-- No external libraries. Icons come from the Windows icon font and text uses Segoe UI Variable (Segoe UI on Windows 10).
-- Downloads and extraction run in the background, so the window stays responsive on low-end PCs.
+- A single ~55 KB native exe on .NET Framework 4.8, which comes with Windows. No runtime to download.
+- No external libraries. Icons come from the Windows icon font, text uses Segoe UI Variable (Segoe UI on Windows 10) and WebP pictures are decoded by Windows itself.
+- Only the mods on the current page become rows, and a picture is downloaded the first time it's shown. Pictures are the site's 320 px copies, resized to the thumbnail and cached in `%LOCALAPPDATA%\SotfModsManager	humbs`.
+- Downloads, decoding and extraction run in the background, so the window stays responsive on low-end PCs.
 
 ## How it works
 
@@ -62,6 +64,17 @@ Every task shows a notification in the bottom right corner that goes from progre
 2. Reads mods from the sotf-mods.com API and downloads them from there.
 3. Extracts zips with protection against zip-slip paths and refuses to touch files while the game is running.
 4. Reads installed versions from `_Redloader/info.json` and each mod's `manifest.json`.
+
+## Source
+
+| File | What it does |
+|---|---|
+| [MainWindow.cs](src/MainWindow.cs) | Builds the window and keeps its state |
+| [ModList.cs](src/ModList.cs) | Loads, filters, sorts, pages and draws the mod list |
+| [Install.cs](src/Install.cs) | Installs RedLoader, mods and dependencies; uninstall, Defender, Play |
+| [Toasts.cs](src/Toasts.cs) | Notifications |
+| [Ui.cs](src/Ui.cs) | Theme and reusable UI building blocks |
+| [Platform.cs](src/Platform.cs) | Game folder, versions, files and network |
 
 ## Build
 
