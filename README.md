@@ -1,132 +1,168 @@
+<div align="center">
+
+<img src="docs/icon.png" width="88" alt="SotF Mods Manager icon">
+
 # SotF Mods Manager
 
-**Install RedLoader and Sons of the Forest mods in one click.**
-Made by [sotf-mods.com](https://sotf-mods.com) for the community.
+**The one-click mod manager for Sons of the Forest.**
+Installs RedLoader and every mod on [sotf-mods.com](https://sotf-mods.com), keeps them updated and lets you switch between mod profiles.
 
-![main window](docs/main.png)
+[![Latest release](https://img.shields.io/github/v/release/ChoqueCastroLD/sotf-mods-manager?style=flat-square&color=b3231a&label=release)](https://github.com/ChoqueCastroLD/sotf-mods-manager/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/ChoqueCastroLD/sotf-mods-manager/total?style=flat-square&color=b3231a)](https://github.com/ChoqueCastroLD/sotf-mods-manager/releases)
+[![License: MIT](https://img.shields.io/github/license/ChoqueCastroLD/sotf-mods-manager?style=flat-square&color=342a2a)](LICENSE)
+![Windows 10 and 11](https://img.shields.io/badge/Windows-10%20%7C%2011-342a2a?style=flat-square)
+![.NET Framework 4.8](https://img.shields.io/badge/.NET%20Framework-4.8-342a2a?style=flat-square)
+![No dependencies](https://img.shields.io/badge/dependencies-none-342a2a?style=flat-square)
+[![sotf-mods.com](https://img.shields.io/badge/mods-sotf--mods.com-b3231a?style=flat-square)](https://sotf-mods.com)
 
-## For players
+[**Download for Windows**](https://github.com/ChoqueCastroLD/sotf-mods-manager/releases/latest/download/SotfModsManager.exe) &nbsp;&nbsp;|&nbsp;&nbsp; [Browse mods](https://sotf-mods.com) &nbsp;&nbsp;|&nbsp;&nbsp; [Report a problem](https://github.com/ChoqueCastroLD/sotf-mods-manager/issues)
 
-1. Download `SotfModsManager.exe` from [Releases](../../releases/latest).
-2. Open it. If RedLoader is missing, click **Install**.
-3. Pick mods from the list and click **Install** on each one.
-4. Click **Play** to start the game through Steam. The first start with RedLoader can take a few minutes.
+<br>
 
-You don't need to install .NET or move files by hand. The manager finds your game and installs anything that's missing.
+<img src="docs/main.png" alt="SotF Mods Manager main window" width="900">
 
-Windows SmartScreen may warn you the first time because the exe isn't signed. Click **More info**, then **Run anyway**. You can read the [whole source code](src) or build it yourself (see below).
+</div>
 
-## Mod list
+## Features
 
-![installed mods](docs/installed.png)
+<table>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/gallery.png" alt="Mod details with picture gallery"><br>
+<b>Every mod, with pictures.</b> Browse, search and sort all approved mods on sotf-mods.com. Select one to see its gallery, version, downloads and full description.
+</td>
+<td width="50%" valign="top">
+<img src="docs/installed.png" alt="Installed mods with updates"><br>
+<b>Updates at a glance.</b> The Installed and Updates tabs show what you have. Mods with a new release get a red <b>Update</b> button.
+</td>
+</tr>
+<tr>
+<td valign="top">
+<img src="docs/install-dialog.png" alt="Install dialog with dependencies and incompatibilities"><br>
+<b>Dependencies handled.</b> Required mods are installed first. If a mod clashes with one you have, you choose to remove it, install anyway or cancel.
+</td>
+<td valign="top">
+<img src="docs/import.png" alt="Importing a shared profile"><br>
+<b>Profiles and modpacks.</b> Keep separate mod sets for solo and multiplayer, switch between them instantly, and share them as small <code>.sotfprofile</code> files.
+</td>
+</tr>
+<tr>
+<td valign="top">
+<img src="docs/crash.png" alt="Crash dialog offering the logs"><br>
+<b>Crash help.</b> If the game crashes, the manager offers RedLoader's and the game's logs, so you can find the mod that caused it.
+</td>
+<td valign="top">
+<img src="docs/settings.png" alt="Settings"><br>
+<b>RedLoader made easy.</b> Install, repair, update, pin a version or uninstall RedLoader with Undo. Add a Defender exclusion for faster first starts.
+</td>
+</tr>
+</table>
 
-- Shows every approved Sons of the Forest mod on sotf-mods.com, with its picture, author and category. All of them run on RedLoader.
-- Tabs: **All**, **Not installed**, **Installed** and **Updates**, each with its count.
-- Sort with the button under the list (most or least downloaded, recently updated, name), or click the Mod, Downloads or Updated header. The sorted column shows an arrow.
-- Search by mod name or author.
-- Pages show exactly the mods that fit in the window. Use the numbered page buttons, the arrows, the mouse wheel or Page Up and Page Down.
-- When a mod you have gets a new release, its button turns red and reads **Update**, and the version column shows which one you have.
+## Quick start
 
-### Mod details
+1. [Download `SotfModsManager.exe`](https://github.com/ChoqueCastroLD/sotf-mods-manager/releases/latest/download/SotfModsManager.exe) and open it. There is nothing to install.
+2. If RedLoader is missing, click **Install** in the top bar.
+3. Click **Install** on the mods you want. Their dependencies come along.
+4. Click **Play**. The first start with RedLoader can take a few minutes.
 
-![mod details](docs/gallery.png)
+The manager finds your game through Steam. If it can't, choose the game folder in settings (the gear button).
 
-Select a mod to see its picture gallery, version, downloads, release date, dependencies and full description on the right. Click a picture to open it at full size.
+> [!NOTE]
+> Windows SmartScreen may warn you the first time because the exe isn't signed. Click **More info**, then **Run anyway**. The [whole source code](src) is here, and you can build it yourself with one command.
 
-### Dependencies and incompatibilities
+## Profiles and modpacks
 
-![install dialog](docs/install-dialog.png)
+A profile is its own set of mods. Open the profile button next to the search box to:
 
-Before installing, the manager tells you which dependencies it will install with the mod, and installs them first. If the mod does not work with a mod you have, it names it and lets you remove it and install, install anyway, or cancel. Incompatibilities come from the `incompatibilities` list of each mod on sotf-mods.com.
-
-## Profiles
-
-![new profile](docs/new-profile.png)
-
-A profile is its own set of mods, for example one for solo and one for playing with friends. Use the profile button next to the search box to:
-
-- **Switch** between profiles. The mods of the other profiles wait in `.sotfmm-profiles` inside the game folder, so switching only moves folders: instant, with no downloads.
-- **New profile**: starts empty. The mods you have stay in the previous profile.
-- **Export**: saves a small `.sotfprofile` file with the list of mods, to share with other players.
-- **Import**: opens a `.sotfprofile` file, creates a new profile and downloads its mods and their dependencies from sotf-mods.com.
-- **Delete**: removes the active profile and its mods, then switches to another one.
-
-### Modpacks
-
-Modpacks are profiles shared on sotf-mods.com. Install one in any of these ways, and it becomes a new profile with its mods and their dependencies:
-
-- **Install modpack from link** in the profile menu: paste the modpack's link.
-- Double-click a downloaded `.sotfprofile` file.
-- Click **Open in launcher** on the modpack's page, which uses a `sotfmm://modpack/user/slug` link.
-
-The manager registers `.sotfprofile` files and `sotfmm://` links for your Windows user each time it starts. No admin rights are needed.
-
-## RedLoader and dependencies
-
-| Dependency | How the manager handles it |
+| Action | What happens |
 |---|---|
-| RedLoader | Installs, repairs or updates it from the official GitHub releases |
-| Visual C++ 2015-2022 x64 runtime | Installs it from Microsoft if it's missing (RedLoader's splash screen needs it) |
-| .NET 6 runtime | Nothing to do: RedLoader ships its own copy |
-| .NET Framework 4.8 (to run this tool) | Already part of Windows 10 and 11 |
+| **Switch** | The other profiles' mods wait in `.sotfmm-profiles` inside the game folder, so switching only moves folders. It's instant and downloads nothing. |
+| **New profile** | Starts empty. The mods you have stay in the previous profile. |
+| **Export** | Saves a `.sotfprofile` file listing the mods, to share with friends. |
+| **Import** | Opens a `.sotfprofile` file as a new profile and downloads its mods and their dependencies. |
+| **Install modpack from link** | Paste a modpack link from sotf-mods.com and it becomes a new profile. |
+| **Delete** | Removes the active profile and its mods, then switches to another one. |
+
+Double-clicking a `.sotfprofile` file or an **Open in launcher** link (`sotfmm://modpack/user/slug`) on sotf-mods.com also opens the manager and imports it. The manager registers both for your Windows user when it starts, with no admin rights.
 
 ## Logs and crashes
 
-The **Logs** button opens RedLoader's log (`_Redloader/Latest.log`), its error log, the game's `Player.log` and the crash reports folder.
+The **Logs** button opens RedLoader's log (`_Redloader/Latest.log`), its error log, the game's `Player.log` and the crash reports folder. When the game closes because of a crash, the manager comes to the front and offers to open the logs. This works whether you started the game from the manager or from Steam.
 
-When the game crashes, the manager notices as soon as it closes and offers to open the logs. They usually name the mod that caused the crash, so you can send them to its author. This works whether you started the game from the manager or from Steam.
+## What it installs
 
-## Settings
+| Component | How the manager handles it |
+|---|---|
+| [RedLoader](https://github.com/ToniMacaroni/RedLoader) | Installs, repairs or updates it from the official GitHub releases. Pin a version such as `0.8.5` in settings. |
+| Visual C++ 2015-2022 x64 runtime | Installs it from Microsoft if missing. RedLoader's splash screen needs it. |
+| .NET 6 runtime | Nothing to do. RedLoader ships its own copy. |
+| .NET Framework 4.8 (to run the manager) | Already part of Windows 10 and 11. |
+| Mods | Downloaded from sotf-mods.com, dependencies first, into the game's `Mods` folder. |
 
-![settings](docs/settings.png)
+## FAQ
 
-- **Game folder**: pick it by hand if the game isn't in a standard Steam library.
-- **RedLoader version**: `latest`, or a release tag such as `0.8.5` to pin or downgrade.
-- **Uninstall RedLoader**: removes `version.dll`, `doorstop_config.ini` and `_Redloader`. Your mods are kept, and the notification offers **Undo**.
-- **Defender exclusion**: Defender's scan of the RedLoader files can stall the first start for minutes ([RedLoader#49](https://github.com/ToniMacaroni/RedLoader/issues/49)). This excludes the game folder. Asks for admin rights.
-- Shortcuts to the game and `Mods` folders.
+<details>
+<summary><b>Is it safe?</b></summary>
 
-## Feedback
+Mods and RedLoader only come from sotf-mods.com and RedLoader's official GitHub releases. Zips are extracted with protection against paths that escape the game folder, and nothing is touched while the game is running. The code is small and open, so anyone can read it.
+</details>
 
-Every task shows a notification in the bottom right corner that goes from progress (with downloaded MB) to success or error. Errors stay until you close them and offer **Retry**. On startup the manager checks for new RedLoader and SotF Mods Manager releases, and skips the check silently when offline.
+<details>
+<summary><b>The first start with mods is very slow.</b></summary>
 
-## Lightweight by design
+Microsoft Defender scans every RedLoader file the first time ([RedLoader#49](https://github.com/ToniMacaroni/RedLoader/issues/49)). Use **Defender exclusion** in settings to skip that scan. It asks for admin rights.
+</details>
 
-- A single ~110 KB native exe on .NET Framework 4.8, which comes with Windows. No runtime to download.
-- No external libraries. Icons come from the Windows icon font, text uses Segoe UI and WebP pictures are decoded by Windows itself.
-- Only the mods on the current page become rows, and a picture is downloaded the first time it's shown. Pictures are the site's 320 px copies, resized to the thumbnail and cached in `%LOCALAPPDATA%\SotfModsManager\thumbs`.
-- Downloads, decoding and extraction run in the background, so the window stays responsive on low-end PCs.
+<details>
+<summary><b>How do I remove everything?</b></summary>
 
-## How it works
+Use **Uninstall RedLoader** in settings. Your mods are kept in case you come back, and the notification offers **Undo**. To remove mods too, open **Mods folder** in settings and delete what is inside.
+</details>
 
-1. Finds the game through Steam's uninstall registry key (AppID 1326470), then every library in `libraryfolders.vdf`.
-2. Reads mods from the sotf-mods.com API and downloads them from there.
-3. Extracts zips with protection against zip-slip paths and refuses to touch files while the game is running.
-4. Reads installed versions from `_Redloader/info.json` and each mod's `manifest.json`.
+<details>
+<summary><b>Where are my profiles stored?</b></summary>
 
-## Source
+In `.sotfmm-profiles` inside the game folder. The active profile's mods are in `Mods` as usual, so the game and other tools see a normal install.
+</details>
+
+<details>
+<summary><b>Can a mod declare incompatibilities?</b></summary>
+
+Yes. Mod authors list them on sotf-mods.com, and the manager reads the `incompatibilities` list of each mod from the site's API.
+</details>
+
+## For developers
+
+Built to be a small, readable example for the Sons of the Forest modding community: one native exe of about 110 KB, no external libraries, and no SDK needed to build it.
+
+```bat
+build.bat
+```
+
+The C# compiler that ships with Windows (.NET Framework 4.8) builds `SotfModsManager.exe` in a second.
 
 | File | What it does |
 |---|---|
 | [MainWindow.cs](src/MainWindow.cs) | Builds the window and keeps its state |
 | [ModList.cs](src/ModList.cs) | Loads, filters, sorts, pages and draws the mod list |
 | [Details.cs](src/Details.cs) | The details panel: gallery, facts and description |
-| [Pictures.cs](src/Pictures.cs) | Downloads, decodes and caches pictures |
+| [Pictures.cs](src/Pictures.cs) | Downloads, decodes (WebP through Windows) and caches pictures |
 | [Install.cs](src/Install.cs) | Installs RedLoader, mods and dependencies; uninstall, Defender, Play |
+| [Profiles.cs](src/Profiles.cs) | Profiles and modpacks: switch, create, delete, export, import |
 | [Logs.cs](src/Logs.cs) | Logs menu and crash check |
-| [Profiles.cs](src/Profiles.cs) | Mod profiles: switch, create, delete, export and import |
 | [Toasts.cs](src/Toasts.cs) | Notifications and the confirmation dialog |
-| [Ui.cs](src/Ui.cs) | Theme and reusable UI building blocks |
-| [Platform.cs](src/Platform.cs) | Game folder, versions, files and network |
+| [Ui.cs](src/Ui.cs) | Theme, icons and reusable UI building blocks |
+| [Platform.cs](src/Platform.cs) | Game folder, versions, files, network and Windows registration |
 
-## Build
+How it works:
 
-Windows already includes the C# compiler, so you don't need an SDK:
+1. Finds the game through Steam's uninstall registry key (AppID 1326470), then every library in `libraryfolders.vdf`.
+2. Reads mods from the sotf-mods.com API and downloads them from there.
+3. Reads installed versions from `_Redloader/info.json` and each mod's `manifest.json`.
+4. Only the mods on the current page become rows. Pictures are the site's 320 px copies, cached in `%LOCALAPPDATA%\SotfModsManager\thumbs`.
 
-```bat
-build.bat
-```
+Issues and pull requests are welcome.
 
 ## License
 
-MIT
+[MIT](LICENSE). Made by [sotf-mods.com](https://sotf-mods.com) for the Sons of the Forest community. Not affiliated with Endnight Games.
