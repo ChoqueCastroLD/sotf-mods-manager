@@ -1,9 +1,9 @@
 // SotF Mods Manager: installs RedLoader and Sons of the Forest mods from sotf-mods.com. https://sotf-mods.com
 // This file builds the window and keeps its state. The other files in src hold the rest.
-using System; using System.Collections.Generic; using System.Data; using System.IO; using System.Web.Script.Serialization; using System.Diagnostics; using System.Drawing; using System.Linq; using System.Net; using System.Runtime.InteropServices; using System.Windows.Forms;
+using System; using System.Collections.Generic; using System.Data; using System.IO; using System.Web.Script.Serialization; using System.Diagnostics; using System.Drawing; using System.Linq; using System.Net; using System.Runtime.InteropServices; using System.Text.RegularExpressions; using System.Windows.Forms;
 
 partial class SotfModsManager : Form {
-    const string AppVersion = "0.8.1", SiteUrl = "https://sotf-mods.com", RepoUrl = "https://github.com/ChoqueCastroLD/sotf-mods-manager";
+    const string AppVersion = "0.9.0", SiteUrl = "https://sotf-mods.com", RepoUrl = "https://github.com/ChoqueCastroLD/sotf-mods-manager";
     Label loaderState = new Label { Dock = DockStyle.Fill, ForeColor = Muted, Font = F(9.5f) }, deps = new Label { Dock = DockStyle.Right, Width = 330, ForeColor = Muted, Font = F(9f), TextAlign = ContentAlignment.MiddleLeft };
     TextBox gamePath = Box(), version = Box(), search = Box();
     FlowLayoutPanel settings = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 250, BackColor = Surface, Padding = new Padding(21, 0, 24, 14), Visible = false };
@@ -46,16 +46,18 @@ partial class SotfModsManager : Form {
             : old ? "Version " + v + " installed, version " + latest + " is available" : "Version " + v + (latest == v ? ", up to date" : " installed");
         deps.Text = (VcInstalled() ? "Visual C++ runtime installed" : "Visual C++ runtime missing, installed with RedLoader") + "\n.NET runtime bundled with RedLoader";
         loaderBtn.Text = v == null ? "Install" : old ? "Update to " + latest : "Repair"; Tint(loaderBtn, v == null || old ? Red : Raised); loaderBtn.Enabled = play.Enabled = Valid; profileBtn.Text = Valid ? Active : "Profiles";
-        foreach (var r in mods.Select("Action = '" + Manual + "'")) mods.Rows.Remove(r);
+        var keep = shown != null && shown.RowState != DataRowState.Detached && (string)shown["User"] == "" ? (string)shown["Id"] : null; // a hand-installed mod stays selected
+        foreach (var r in mods.Select("User = ''")) mods.Rows.Remove(r); authorNotes = Valid ? Notes(Active) : new Dictionary<string, string>();
         builds = Valid && Directory.Exists(LocalBuildings) ? Directory.GetFiles(LocalBuildings, "*.json").Select(f => new { f, m = BuildGuid.Match(Head(f)) }).Where(x => x.m.Success)
             .GroupBy(x => x.m.Groups[1].Value, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First().f, StringComparer.OrdinalIgnoreCase) : new Dictionary<string, string>();
         foreach (DataRow r in mods.Select("Kind = 'Build'")) { r["Installed"] = ""; r["Action"] = builds.ContainsKey((string)r["Id"]) ? Installed : "Install"; }
-        foreach (DataRow r in mods.Select(ModsOnly)) { var id = (string)r["Id"]; var have = Valid ? JsonVersion(@"Mods\" + id + @"\manifest.json", @"Mods\" + id + ".dll") : null; var upd = have != null && Newer((string)r["Latest"], have);
-            r["Installed"] = upd ? "Installed " + have : ""; r["Action"] = have == null ? "Install" : upd ? "Update" : Installed; }
-        if (Valid && Directory.Exists(Path.Combine(Game, "Mods"))) foreach (var dll in Directory.GetFiles(Path.Combine(Game, "Mods"), "*.dll")) { // mods added by hand: listed, but not managed
-            var id = Path.GetFileNameWithoutExtension(dll); if (ById(id) != null) continue; var m = Manifest(id); Func<string, string> f = k => m.ContainsKey(k) ? m[k] as string : null;
-            mods.Rows.Add(f("name") ?? id, f("author") ?? "", "Installed manually" + (f("author") == null ? "" : " by " + f("author")), 0, File.GetLastWriteTime(dll), "", f("version") ?? "unknown", Manual, id, "", "", "", "", "",
+        foreach (DataRow r in mods.Select(ModsOnly)) { var id = (string)r["Id"]; var off = IsOff(id); var have = Valid ? JsonVersion(@"Mods\" + id + @"\manifest.json", @"Mods\" + id + ".dll" + (off ? Off : "")) : null; var upd = have != null && Newer((string)r["Latest"], have);
+            r["Installed"] = upd ? "Installed " + have : ""; r["Action"] = have == null ? "Install" : off ? Disabled : upd ? "Update" : Installed; }
+        var dir = Path.Combine(Game, "Mods"); if (Valid && Directory.Exists(dir)) foreach (var dll in Directory.GetFiles(dir, "*.dll").Concat(Directory.GetFiles(dir, "*.dll" + Off))) { // mods added by hand: listed, but not managed
+            var id = Regex.Replace(Path.GetFileName(dll), @"\.dll(\.disabled)?$", "", RegexOptions.IgnoreCase); if (ById(id) != null) continue; var m = Manifest(id); Func<string, string> f = k => m.ContainsKey(k) ? m[k] as string : null;
+            mods.Rows.Add(f("name") ?? id, f("author") ?? "", "Installed manually" + (f("author") == null ? "" : " by " + f("author")), 0, File.GetLastWriteTime(dll), "", f("version") ?? "unknown", IsOff(id) ? Disabled : Manual, id, "", "", "", "", "",
                 (f("description") ?? "") + "\n\nThis mod is not on sotf-mods.com, so it was installed by hand. The manager lists it but does not update or remove it. Its files are in the Mods folder.", "Mod", "", ""); }
-        if (!Valid) settings.Visible = true; Filter();
+        if (keep != null) shown = ById(keep) ?? shown; if (!Valid) settings.Visible = true; Filter();
     }
+    bool IsOff(string id) { var dll = Path.Combine(Game, "Mods", id + ".dll"); return Valid && !File.Exists(dll) && File.Exists(dll + Off); }
 }

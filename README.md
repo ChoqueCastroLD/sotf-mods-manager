@@ -33,7 +33,7 @@ Installs RedLoader and every mod and build on [sotf-mods.com](https://sotf-mods.
 </td>
 <td width="50%" valign="top">
 <img src="docs/installed.png" alt="Installed mods with updates"><br>
-<b>Updates at a glance.</b> The Installed and Updates tabs show what you have. Mods with a new release get a red <b>Update</b> button.
+<b>Updates at a glance.</b> The Installed and Updates tabs show what you have. Mods with a new release get a red <b>Update</b> button, and <b>Disable</b> turns a mod off without uninstalling it.
 </td>
 </tr>
 <tr>
@@ -86,11 +86,13 @@ A profile is its own set of mods. Open the profile button next to the search box
 | **New profile** | Starts empty. The mods you have stay in the previous profile. |
 | **Export** | Saves a `.sotfprofile` file listing the mods, to share with friends. |
 | **Import** | Opens a `.sotfprofile` file as a new profile and downloads its mods and their dependencies. |
-| **Install modpack from link** | Paste a modpack link from sotf-mods.com and it becomes a new profile. |
+| **Install modpack from link** | Paste a modpack link from sotf-mods.com and it becomes a new profile, with the author's notes and, if you agree, the mod settings. |
 | **Browse modpacks** | Opens [sotf-mods.com/modpacks](https://sotf-mods.com/modpacks). |
 | **Delete** | Removes the active profile and its mods, then switches to another one. |
 
 Double-clicking a `.sotfprofile` file also opens the manager and imports it.
+
+Modpacks can include mod settings (config files for `UserData` and `Mods`). After the mods are installed, the manager asks before applying them, checks the download against the modpack's hash and refuses any file outside those folders or of another type. Replaced files are backed up, and the notification offers **Undo**. Notes from the modpack author show in the import dialog and at the top of each mod's details while that profile is active.
 
 ## Install from the website
 
@@ -143,6 +145,12 @@ Use **Uninstall RedLoader** in settings. Your mods are kept in case you come bac
 <summary><b>I installed some mods by hand. Will the manager see them?</b></summary>
 
 Yes. Any mod in the `Mods` folder that isn't on sotf-mods.com shows up in the Installed tab as **Manual**, with the name and version from its `manifest.json`. The manager doesn't update or remove those mods, and they move with the profile they belong to.
+</details>
+
+<details>
+<summary><b>How do I turn a mod off without removing it?</b></summary>
+
+Select it and click <b>Disable</b>. The manager renames its dll to <code>.dll.disabled</code>, so RedLoader skips it while its files and settings stay. <b>Enable</b> turns it back on, and installing or updating it does too.
 </details>
 
 <details>

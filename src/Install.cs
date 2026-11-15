@@ -29,7 +29,8 @@ partial class SotfModsManager {
         if (choice == null || choice == "Cancel") return; var remove = choice.StartsWith("Remove") ? clashes : new List<DataRow>();
         Run((Pending(r) ? "Installing " : "Reinstalling ") + r["Name"], async t => {
             EnsureClosed(); if (LoaderVersion == null) throw new Exception("install RedLoader first.");
-            foreach (var x in remove) RemoveMod(x); foreach (var d in adding) await InstallMod(d, t); // dependencies first
+            foreach (var x in remove) RemoveMod(x); foreach (var x in Deps(r, new HashSet<DataRow> { r }).Where(x => (string)x["Action"] == Disabled).ToList()) Enable(x); // a disabled dependency is turned back on
+            foreach (var d in adding) await InstallMod(d, t); // dependencies first
             return r["Name"] + ((string)r["Kind"] == Build ? "" : " " + r["Latest"]) + " installed" + (deps.Count > 0 ? " with " + Names(deps) : "") + (remove.Count > 0 ? ", " + Names(remove) + " removed" : ""); });
     }
     IEnumerable<DataRow> Deps(DataRow r, HashSet<DataRow> seen) { // every dependency on sotf-mods.com, deepest first
@@ -37,14 +38,23 @@ partial class SotfModsManager {
     static string[] Ids(object list) { return ((string)list).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries); }
     static string Names(IEnumerable<DataRow> rows) { return string.Join(", ", rows.Select(x => (string)x["Name"])); }
     string ModPath(DataRow r) { var id = (string)r["Id"]; if (!Regex.IsMatch(id, @"^[\w.-]+$")) throw new Exception("invalid mod id."); return Path.Combine(Game, "Mods", id); }
-    void RemoveMod(DataRow r) { var p = ModPath(r); File.Delete(p + ".dll"); TryDelete(p); }
+    void RemoveMod(DataRow r) { var p = ModPath(r); File.Delete(p + ".dll"); File.Delete(p + ".dll" + Off); TryDelete(p); }
+    void Enable(DataRow r) { var dll = ModPath(r) + ".dll"; File.Move(dll + Off, dll); }
+    void Toggle(DataRow r) { // RedLoader only loads Mods\*.dll, so a renamed dll keeps the mod, its files and its settings without loading it
+        var on = (string)r["Action"] == Disabled; var id = (string)r["Id"];
+        try { EnsureClosed(); if (on) Enable(r); else { var dll = ModPath(r) + ".dll"; File.Delete(dll + Off); File.Move(dll, dll + Off); }
+            var users = Names(mods.Rows.Cast<DataRow>().Where(x => !on && !Pending(x) && (string)x["Action"] != Disabled && Ids(x["Deps"]).Contains(id, StringComparer.OrdinalIgnoreCase)));
+            Toast(Done, r["Name"] + (on ? " enabled" : " disabled. Its files and settings are kept" + (users == "" ? "" : ", but " + users + " need" + (users.Contains(",") ? "" : "s") + " it"))); }
+        catch (Exception ex) { Toast(Fail, "Could not " + (on ? "enable " : "disable ") + r["Name"] + ": " + ex.Message); }
+        RefreshState();
+    }
     async Task InstallMod(DataRow r, Panel t) {
         string game = Game, dll = ModPath(r) + ".dll", id = (string)r["Id"], build; var isBuild = (string)r["Kind"] == Build;
         if (!builds.TryGetValue(id, out build)) build = Path.Combine(LocalBuildings, id + ".json"); // a build already there by another name is replaced, not duplicated
         await Fetch(SiteUrl + "/api/mods/slug/" + Esc(r["User"]) + "/" + Esc(r["Slug"]) + "/download/" + Esc(r["Release"]), (string)r["Name"], t, f => {
             if (isBuild) { Directory.CreateDirectory(LocalBuildings); File.Copy(f, build, true); return; } // BuildShare loads every json in LocalBuildings
             bool zip; using (var s = File.OpenRead(f)) zip = s.ReadByte() == 'P' && s.ReadByte() == 'K'; // a mod is a zip or a bare dll
-            if (zip) Extract(f, game); else { Directory.CreateDirectory(Path.GetDirectoryName(dll)); File.Copy(f, dll, true); } });
+            if (zip) Extract(f, game); else { Directory.CreateDirectory(Path.GetDirectoryName(dll)); File.Copy(f, dll, true); } File.Delete(dll + Off); }); // installing turns a disabled mod back on
     }
     Dictionary<string, string> builds = new Dictionary<string, string>(); // installed build guid to its file
     string LocalBuildings { get { return Path.Combine(Game, @"Mods\BuildShare\LocalBuildings"); } }

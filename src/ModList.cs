@@ -3,7 +3,7 @@ using System; using System.Collections; using System.Collections.Generic; using 
 using System.Text.RegularExpressions; using System.Web.Script.Serialization; using System.Windows.Forms;
 
 partial class SotfModsManager {
-    const string Installed = "Installed", Manual = "Manual"; const int ActionCol = 5;
+    const string Installed = "Installed", Manual = "Manual", Disabled = "Disabled", Off = ".disabled"; const int ActionCol = 5;
     const string Build = "Build", ModsOnly = "Kind = 'Mod'"; const char Unchecked = '', Checked = ''; // Segoe MDL2 checkbox and checked checkbox
     static readonly string[][] Views = { new[] { "All", ModsOnly, "No mods match your search" }, new[] { "Not installed", ModsOnly + " AND Action = 'Install'", "Every mod is installed" },
         new[] { "Installed", ModsOnly + " AND Action <> 'Install'", "No mods installed yet" }, new[] { "Updates", "Action = 'Update'", "All your mods are up to date" },
