@@ -197,7 +197,7 @@ The C# compiler that ships with Windows (.NET Framework 4.8) builds `SotfModsMan
 How it works:
 
 1. Finds the game through Steam's uninstall registry key (AppID 1326470), then every library in `libraryfolders.vdf`.
-2. Reads mods and builds from the sotf-mods.com API (`/api/mods?type=Mod` and `type=Build`, plus `nsfw=true` for NSFW ones) and downloads them from there.
+2. Reads mods and builds from the sotf-mods.com API (`/api/mods?type=Mod`, `type=Library` and `type=Build`, plus `nsfw=true` for NSFW ones; libraries such as SonsAxLib live in `Mods/Libs`) and downloads them from there.
 3. Builds are BuildShare `.json` files; one counts as installed when a file in `LocalBuildings` has its `Guid`.
 4. Reads installed versions from `_Redloader/info.json` and each mod's `manifest.json`.
 5. Only the mods on the current page become rows. Pictures are the site's 320 px copies, cached in `%LOCALAPPDATA%\SotfModsManager\thumbs`.

@@ -1,4 +1,4 @@
-// The mod list: loads mods from sotf-mods.com, then filters, sorts and pages them, and draws every row itself.
+﻿// The mod list: loads mods from sotf-mods.com, then filters, sorts and pages them, and draws every row itself.
 using System; using System.Collections; using System.Collections.Generic; using System.Data; using System.Drawing; using System.Linq;
 using System.Text.RegularExpressions; using System.Web.Script.Serialization; using System.Windows.Forms;
 
@@ -48,16 +48,16 @@ partial class SotfModsManager {
         return new Control[] { body, Strip(64, 40, Bg, Group(DockStyle.Right, tabs), new Panel { Dock = DockStyle.Right, Width = 8 }, reload, searchField, new Panel { Dock = DockStyle.Left, Width = 8 }, SetupProfiles()) };
     }
 
-    async void LoadMods() { // approved mods and BuildShare builds; every mod on sotf-mods.com runs on RedLoader and every build needs BuildShare
+    async void LoadMods() { // approved mods, libraries (listed as mods, other mods need them) and BuildShare builds; every mod on sotf-mods.com runs on RedLoader and every build needs BuildShare
         empty = "Loading mods"; grid.Invalidate();
-        try { var rows = new List<object[]>(); using (var web = Web()) foreach (var kind in new[] { "Mod", Build }) foreach (var only in new[] { "", "&nsfw=true" }) for (int page = 1, count = 1; page <= count; page++) { // the API serves at most 1000 per page and NSFW ones only when asked
+        try { var rows = new List<object[]>(); using (var web = Web()) foreach (var kind in new[] { "Mod", "Library", Build }) foreach (var only in new[] { "", "&nsfw=true" }) for (int page = 1, count = 1; page <= count; page++) { // the API serves at most 1000 per page and NSFW ones only when asked
                 var json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Deserialize<Dictionary<string, object>>(await web.DownloadStringTaskAsync(SiteUrl + "/api/mods?type=" + kind + only + "&approved=true&limit=1000&page=" + page));
                 count = Convert.ToInt32(((Dictionary<string, object>)json["meta"])["pages"]); bool build = kind == Build;
                 foreach (Dictionary<string, object> m in (IEnumerable)json["data"]) { var u = (Dictionary<string, object>)m["user"]; var cat = m["category"] as Dictionary<string, object>;
                     var shots = new[] { m["imageUrl"] as string }.Concat(((IEnumerable)m["images"] ?? new object[0]).Cast<Dictionary<string, object>>().Select(i => i["url"] as string)).Where(x => !string.IsNullOrEmpty(x)).Distinct();
                     rows.Add(new[] { m["name"], u["name"], "by " + u["name"] + (cat == null ? "" : " in " + cat["name"]), Convert.ToInt32(m["downloads"]), DateTime.Parse((string)(m["lastReleasedAt"] ?? m["updatedAt"])), "",
                         build ? (m["numberOfElements"] == null ? "" : m["numberOfElements"] + " pieces") : m["latestVersion"], "", m["mod_id"], u["slug"], m["slug"], build ? "BuildShare" : IdList(m, "dependencies"),
-                        IdList(m, "incompatibilities"), string.Join("\n", shots), m["description"] ?? m["shortDescription"], kind, m["latestVersion"], true.Equals(m["isNSFW"]) ? "1" : "" }); } }
+                        IdList(m, "incompatibilities"), string.Join("\n", shots), m["description"] ?? m["shortDescription"], build ? Build : "Mod", m["latestVersion"], true.Equals(m["isNSFW"]) ? "1" : "" }); } }
             mods.Rows.Clear(); foreach (var r in rows) mods.Rows.Add(r); // replaced only after every answer is good, so a failed reload keeps the list
             RefreshState(); if (opened != null) { OpenShared(opened); opened = null; } // needs the mod list
         } catch (Exception ex) { empty = "Could not load mods"; grid.Invalidate(); Toast(Fail, "Could not load mods: " + ex.Message, "Retry", LoadMods); }

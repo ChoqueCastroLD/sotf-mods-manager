@@ -51,13 +51,13 @@ partial class SotfModsManager {
         if (Ask("Install modpack", "Paste the link of a modpack from sotf-mods.com. It becomes a new profile with its mods.", new[] { "Install", "Cancel" }, box) == "Install") OpenModpack(box.Text);
     }
     void OpenShared(string arg) { // what Windows passes when a .sotfprofile file or a sotfmm://modpack/user/slug link is opened
-        var one = Regex.Match(arg ?? "", @"^sotfmm://(mod|build)/([\w.-]+)/([\w.-]+)"); // one-click install from a mod or build page
+        var one = Regex.Match(Uri.UnescapeDataString(arg ?? ""), @"^sotfmm://(mod|build)/([^/?#]+)/([^/?#]+)"); // slugs can hold any character but a slash, for example axel's-mod-menu // one-click install from a mod or build page
         if (!Valid) Toast(Fail, "Choose the game folder in settings first"); else if (File.Exists(arg)) Import(File.ReadAllText(arg)); else if (!one.Success) OpenModpack(arg);
         else { var r = mods.Rows.Cast<DataRow>().FirstOrDefault(x => (string)x["User"] == one.Groups[2].Value && (string)x["Slug"] == one.Groups[3].Value);
             if (r == null) Toast(Fail, "That " + one.Groups[1].Value + " is not on sotf-mods.com"); else { view = (string)r["Kind"] == Build ? 4 : 0; search.Text = (string)r["Name"]; Filter(true); if (Pending(r)) Act(r); else Toast(Done, r["Name"] + " is already installed"); } } }
     async void OpenModpack(string link) { // only the user and slug of the link are used, and only to call sotf-mods.com
-        var m = Regex.Match(link ?? "", @"modpacks?/([\w.-]+)/([\w.-]+)"); if (!m.Success) { Toast(Fail, "That is not a modpack link from sotf-mods.com"); return; }
-        try { string json; using (var web = Web()) json = await web.DownloadStringTaskAsync(SiteUrl + "/api/modpacks/slug/" + m.Groups[1].Value + "/" + m.Groups[2].Value + "/download"); Import(json); }
+        var m = Regex.Match(Uri.UnescapeDataString(link ?? ""), @"modpacks?/([^/?#\s]+)/([^/?#\s]+)"); if (!m.Success) { Toast(Fail, "That is not a modpack link from sotf-mods.com"); return; }
+        try { string json; using (var web = Web()) json = await web.DownloadStringTaskAsync(SiteUrl + "/api/modpacks/slug/" + Esc(m.Groups[1].Value) + "/" + Esc(m.Groups[2].Value) + "/download"); Import(json); }
         catch (Exception ex) { Toast(Fail, "Could not get the modpack: " + ex.Message, "Retry", () => OpenModpack(link)); }
     }
     void Import(string profile) { // a profile file or a modpack: a new profile with the latest version of each mod, the author's notes and, if the user agrees, the mod settings

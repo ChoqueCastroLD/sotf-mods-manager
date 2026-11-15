@@ -37,7 +37,10 @@ partial class SotfModsManager {
         foreach (var d in Ids(r["Deps"]).Select(ById).Where(d => d != null && seen.Add(d)).ToList()) { foreach (var x in Deps(d, seen)) yield return x; yield return d; } }
     static string[] Ids(object list) { return ((string)list).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries); }
     static string Names(IEnumerable<DataRow> rows) { return string.Join(", ", rows.Select(x => (string)x["Name"])); }
-    string ModPath(DataRow r) { var id = (string)r["Id"]; if (!Regex.IsMatch(id, @"^[\w.-]+$")) throw new Exception("invalid mod id."); return Path.Combine(Game, "Mods", id); }
+    string ModPath(DataRow r) { var id = (string)r["Id"]; if (!Regex.IsMatch(id, @"^[\w.-]+$")) throw new Exception("invalid mod id."); return Path.Combine(Game, ModRel(id)); }
+    string ModRel(string id) { // libraries such as SonsAxLib install into Mods\Libs
+        var lib = Path.Combine("Mods", "Libs", id); Func<string, bool> has = rel => File.Exists(Path.Combine(Game, rel + ".dll")) || File.Exists(Path.Combine(Game, rel + ".dll" + Off));
+        return !has(Path.Combine("Mods", id)) && has(lib) ? lib : Path.Combine("Mods", id); }
     void RemoveMod(DataRow r) { var p = ModPath(r); File.Delete(p + ".dll"); File.Delete(p + ".dll" + Off); TryDelete(p); }
     void Enable(DataRow r) { var dll = ModPath(r) + ".dll"; File.Move(dll + Off, dll); }
     void Toggle(DataRow r) { // RedLoader only loads Mods\*.dll, so a renamed dll keeps the mod, its files and its settings without loading it
