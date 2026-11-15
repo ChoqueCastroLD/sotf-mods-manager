@@ -5,7 +5,7 @@
 # SotF Mods Manager
 
 **The one-click mod manager for Sons of the Forest.**
-Installs RedLoader and every mod on [sotf-mods.com](https://sotf-mods.com), keeps them updated and lets you switch between mod profiles.
+Installs RedLoader and every mod and build on [sotf-mods.com](https://sotf-mods.com), keeps them updated and lets you switch between mod profiles.
 
 [![Latest release](https://img.shields.io/github/v/release/ChoqueCastroLD/sotf-mods-manager?style=flat-square&color=b3231a&label=release)](https://github.com/ChoqueCastroLD/sotf-mods-manager/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/ChoqueCastroLD/sotf-mods-manager/total?style=flat-square&color=b3231a)](https://github.com/ChoqueCastroLD/sotf-mods-manager/releases)
@@ -59,7 +59,7 @@ Installs RedLoader and every mod on [sotf-mods.com](https://sotf-mods.com), keep
 <tr>
 <td colspan="2" valign="top">
 <img src="docs/builds.png" alt="Builds tab"><br>
-<b>Builds in one click.</b> The Builds tab lists every BuildShare build on sotf-mods.com. Install one and the manager adds BuildShare if you don't have it, then drops the build where BuildShare finds it. Open BuildShare in game (Page Up) to place it. The <b>Install with launcher</b> buttons on sotf-mods.com open the manager on that mod or build (<code>sotfmm://mod/user/slug</code> and <code>sotfmm://build/user/slug</code>).
+<b>Builds in one click.</b> The Builds tab lists every BuildShare build on sotf-mods.com. Install one and the manager adds BuildShare if you don't have it, then drops the build where BuildShare finds it. Open BuildShare in game (Page Up) to place it.
 </td>
 </tr>
 </table>
@@ -68,7 +68,7 @@ Installs RedLoader and every mod on [sotf-mods.com](https://sotf-mods.com), keep
 
 1. [Download `SotfModsManager.exe`](https://github.com/ChoqueCastroLD/sotf-mods-manager/releases/latest/download/SotfModsManager.exe) and open it. There is nothing to install.
 2. If RedLoader is missing, click **Install** in the top bar.
-3. Click **Install** on the mods you want. Their dependencies come along.
+3. Click **Install** on the mods you want, or on a build in the **Builds** tab. Their dependencies come along.
 4. Click **Play**. The first start with RedLoader can take a few minutes.
 
 The manager finds your game through Steam. If it can't, choose the game folder in settings (the gear button).
@@ -87,9 +87,22 @@ A profile is its own set of mods. Open the profile button next to the search box
 | **Export** | Saves a `.sotfprofile` file listing the mods, to share with friends. |
 | **Import** | Opens a `.sotfprofile` file as a new profile and downloads its mods and their dependencies. |
 | **Install modpack from link** | Paste a modpack link from sotf-mods.com and it becomes a new profile. |
+| **Browse modpacks** | Opens [sotf-mods.com/modpacks](https://sotf-mods.com/modpacks). |
 | **Delete** | Removes the active profile and its mods, then switches to another one. |
 
-Double-clicking a `.sotfprofile` file or an **Open in launcher** link (`sotfmm://modpack/user/slug`) on sotf-mods.com also opens the manager and imports it. The manager registers both for your Windows user when it starts, with no admin rights.
+Double-clicking a `.sotfprofile` file also opens the manager and imports it.
+
+## Install from the website
+
+Buttons on sotf-mods.com open the manager through `sotfmm://` links and install with one click:
+
+| Link | What happens |
+|---|---|
+| `sotfmm://mod/user/slug` | Shows that mod and installs it with its dependencies |
+| `sotfmm://build/user/slug` | Shows that build and installs it, with BuildShare if missing |
+| `sotfmm://modpack/user/slug` | Imports that modpack as a new profile |
+
+The manager registers the links and `.sotfprofile` files for your Windows user when it starts, with no admin rights.
 
 ## Logs and crashes
 
@@ -104,6 +117,7 @@ The **Logs** button opens RedLoader's log (`_Redloader/Latest.log`), its error l
 | .NET 6 runtime | Nothing to do. RedLoader ships its own copy. |
 | .NET Framework 4.8 (to run the manager) | Already part of Windows 10 and 11. |
 | Mods | Downloaded from sotf-mods.com, dependencies first, into the game's `Mods` folder. |
+| Builds | Downloaded from sotf-mods.com into `Mods/BuildShare/LocalBuildings`, where [BuildShare](https://sotf-mods.com/mods/tonimacaroni/buildshare) loads them. |
 
 ## FAQ
 
@@ -143,9 +157,15 @@ In `.sotfmm-profiles` inside the game folder. The active profile's mods are in `
 Yes. Mod authors list them on sotf-mods.com, and the manager reads the `incompatibilities` list of each mod from the site's API.
 </details>
 
+<details>
+<summary><b>Why don't I see some mods?</b></summary>
+
+Mods marked NSFW on sotf-mods.com are hidden by default. Tick <b>NSFW</b> below the list to show them. Only approved mods and builds are listed.
+</details>
+
 ## For developers
 
-Built to be a small, readable example for the Sons of the Forest modding community: one native exe of about 110 KB, no external libraries, and no SDK needed to build it.
+Built to be a small, readable example for the Sons of the Forest modding community: one native exe of about 125 KB, no external libraries, and no SDK needed to build it.
 
 ```bat
 build.bat
@@ -156,11 +176,11 @@ The C# compiler that ships with Windows (.NET Framework 4.8) builds `SotfModsMan
 | File | What it does |
 |---|---|
 | [MainWindow.cs](src/MainWindow.cs) | Builds the window and keeps its state |
-| [ModList.cs](src/ModList.cs) | Loads, filters, sorts, pages and draws the mod list |
+| [ModList.cs](src/ModList.cs) | Loads, filters, sorts, pages and draws the mod and build list |
 | [Details.cs](src/Details.cs) | The details panel: gallery, facts and description |
 | [Pictures.cs](src/Pictures.cs) | Downloads, decodes (WebP through Windows) and caches pictures |
-| [Install.cs](src/Install.cs) | Installs RedLoader, mods and dependencies; uninstall, Defender, Play |
-| [Profiles.cs](src/Profiles.cs) | Profiles and modpacks: switch, create, delete, export, import |
+| [Install.cs](src/Install.cs) | Installs RedLoader, mods, builds and dependencies; uninstall, Defender, Play |
+| [Profiles.cs](src/Profiles.cs) | Profiles, modpacks and `sotfmm://` links: switch, create, delete, export, import |
 | [Logs.cs](src/Logs.cs) | Logs menu and crash check |
 | [Toasts.cs](src/Toasts.cs) | Notifications and the confirmation dialog |
 | [Ui.cs](src/Ui.cs) | Theme, icons and reusable UI building blocks |
@@ -169,9 +189,10 @@ The C# compiler that ships with Windows (.NET Framework 4.8) builds `SotfModsMan
 How it works:
 
 1. Finds the game through Steam's uninstall registry key (AppID 1326470), then every library in `libraryfolders.vdf`.
-2. Reads mods from the sotf-mods.com API and downloads them from there.
-3. Reads installed versions from `_Redloader/info.json` and each mod's `manifest.json`.
-4. Only the mods on the current page become rows. Pictures are the site's 320 px copies, cached in `%LOCALAPPDATA%\SotfModsManager\thumbs`.
+2. Reads mods and builds from the sotf-mods.com API (`/api/mods?type=Mod` and `type=Build`, plus `nsfw=true` for NSFW ones) and downloads them from there.
+3. Builds are BuildShare `.json` files; one counts as installed when a file in `LocalBuildings` has its `Guid`.
+4. Reads installed versions from `_Redloader/info.json` and each mod's `manifest.json`.
+5. Only the mods on the current page become rows. Pictures are the site's 320 px copies, cached in `%LOCALAPPDATA%\SotfModsManager\thumbs`.
 
 Issues and pull requests are welcome.
 
